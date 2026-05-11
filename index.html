@@ -218,12 +218,12 @@
       <div class="cards">
         <div class="card">
           <div class="agent">Claude Code</div>
-          <div class="score good">91.4</div>
+          <div class="score good">94.2</div>
           <div class="meta">🥇 avg across all use-cases</div>
         </div>
         <div class="card">
           <div class="agent">Darts</div>
-          <div class="score good">83.1</div>
+          <div class="score ok">74.2</div>
           <div class="meta">🥈 avg across all use-cases</div>
         </div></div>
       <h2>Score breakdown by use-case</h2>
@@ -232,12 +232,12 @@
           <thead><tr><th>Agent</th><th>pte-hello-world-note</th><th>Overall avg</th></tr></thead>
           <tbody><tr>
           <td><strong>Claude Code</strong></td>
-          <td class="score-cell good">91.4</td>
-          <td class="score-cell good"><strong>91.4</strong></td>
+          <td class="score-cell good">94.2</td>
+          <td class="score-cell good"><strong>94.2</strong></td>
         </tr><tr>
           <td><strong>Darts</strong></td>
-          <td class="score-cell good">83.1</td>
-          <td class="score-cell good"><strong>83.1</strong></td>
+          <td class="score-cell ok">74.2</td>
+          <td class="score-cell ok"><strong>74.2</strong></td>
         </tr></tbody>
         </table>
       </div>
@@ -247,87 +247,40 @@
       <p class="section-intro">Click a metric to expand rankings and week-by-week trend.</p>
       
         <div class="accordion-block">
-          <div class="accordion-header" onclick="toggleAccordion('task-completion')">
+          <div class="accordion-header" onclick="toggleAccordion('functional-correctness')">
             <div>
-              <div class="accordion-title">Task completion</div>
-              <div class="accordion-sub">Did the published extension fulfill the requirement spec, verified at runtime?</div>
+              <div class="accordion-title">functional_correctness</div>
+              <div class="accordion-sub"></div>
             </div>
-            <span class="chev" id="achev-task-completion">&#9654;</span>
+            <span class="chev" id="achev-functional-correctness">&#9654;</span>
           </div>
-          <div class="accordion-body" id="abody-task-completion">
+          <div class="accordion-body" id="abody-functional-correctness">
             <div class="inner-label">Rankings</div>
             <div class="table-wrap">
               <table>
                 <thead><tr><th></th><th>Agent</th><th>Score</th><th>Use-case</th><th>Week</th><th></th></tr></thead>
                 <tbody>
-            <tr class="drill-tr" onclick="toggleDrill('ax-task-completion-claude-code')">
+            <tr class="drill-tr" onclick="toggleDrill('ax-functional-correctness-claude-code')">
               <td>🥇</td>
               <td><strong>Claude Code</strong></td>
               <td class="score-cell good">96</td>
               <td><code>pte-hello-world-note</code></td>
               <td>W1</td>
-              <td class="chev-cell"><span class="chev" id="chev-ax-task-completion-claude-code">&#9654;</span></td>
+              <td class="chev-cell"><span class="chev" id="chev-ax-functional-correctness-claude-code">&#9654;</span></td>
             </tr>
-            <tr class="drill-body-tr" id="body-ax-task-completion-claude-code">
-              <td colspan="6"><div class="reasoning-box">All acceptance criteria met. tableextension 50100 declares Text[100] field with OnValidate min-length check (workspace/PTECustomerExt.TableExt.al), pageextension 50110 places it via addlast(General) on Customer Card. Extension &#x27;bsbench-pte-hello-world-note&#x27; confirmed installed via Automation API. Playwright verified: field renders on Customer Card General FastTab with correct caption &#x27;Hello World Note&#x27; and correct ToolTip; entering &#x27;Hi&#x27; triggers exact error &#x27;Hello World Note must contain at least 3 characters&#x27;.</div></td>
+            <tr class="drill-body-tr" id="body-ax-functional-correctness-claude-code">
+              <td colspan="6"><div class="reasoning-box">Verified end-to-end in BC web client: the &#x27;Hello World Note&#x27; field renders at the end of the General FastTab on Customer Card 10000 (Adatum Corporation). Entering &#x27;Hi&#x27; (2 chars) raised the exact spec error &#x27;Hello World Note must contain at least 3 characters&#x27; (confirmed in DOM at line &#x27;Hello World Note must contain at least 3 characters&#x27;). Entering &#x27;ABC&#x27; (3 chars) was accepted and the page transitioned from &#x27;Not saved&#x27; to &#x27;Saved&#x27;. Blank handling allowed by the early exit in OnValidate. Extension published cleanly (publish.log shows success, no compile errors).</div></td>
             </tr>
-            <tr class="drill-tr" onclick="toggleDrill('ax-task-completion-static')">
+            <tr class="drill-tr" onclick="toggleDrill('ax-functional-correctness-static')">
               <td>🥈</td>
               <td><strong>Darts</strong></td>
-              <td class="score-cell good">92</td>
-              <td><code>pte-hello-world-note</code></td>
-              <td>W1</td>
-              <td class="chev-cell"><span class="chev" id="chev-ax-task-completion-static">&#9654;</span></td>
-            </tr>
-            <tr class="drill-body-tr" id="body-ax-task-completion-static">
-              <td colspan="6"><div class="reasoning-box">All acceptance criteria verified: tableextension with `PTE Hello World Note` Text[100] (CustomerExt.al), pageextension addlast(General) on Customer Card (CustomerCardExt.al), no base object modifications. Compile and publish succeeded (compile.log, publish.log). Playwright verification: opened Customer Card for Adatum Corporation, field visible in General tab; typed &#x27;Hi&#x27; (2 chars) and the OnValidate trigger raised exactly &#x27;Hello World Note must be at least 3 characters long.&#x27; Minor: agent added out-of-spec extras (HelloWorld codeunit, CustomerListExt, Permissionset, optional Message popup) and used object IDs 50000/50110 instead of the suggested 50100/50110 — within idRange so harmless.</div></td>
-            </tr></tbody>
-              </table>
-            </div>
-            <div class="inner-label" style="margin-top:20px">Week-by-week trend</div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Agent</th><th>W1: May 08 – May 14, 2026</th></tr></thead>
-                <tbody><tr><td><strong>Claude Code</strong></td><td class="score-cell good">96</td></tr><tr><td><strong>Darts</strong></td><td class="score-cell good">92</td></tr></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <div class="accordion-block">
-          <div class="accordion-header" onclick="toggleAccordion('reasoning-quality')">
-            <div>
-              <div class="accordion-title">Reasoning quality</div>
-              <div class="accordion-sub">Was the approach logical, BC-aware, idiomatic AL?</div>
-            </div>
-            <span class="chev" id="achev-reasoning-quality">&#9654;</span>
-          </div>
-          <div class="accordion-body" id="abody-reasoning-quality">
-            <div class="inner-label">Rankings</div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th></th><th>Agent</th><th>Score</th><th>Use-case</th><th>Week</th><th></th></tr></thead>
-                <tbody>
-            <tr class="drill-tr" onclick="toggleDrill('ax-reasoning-quality-claude-code')">
-              <td>🥇</td>
-              <td><strong>Claude Code</strong></td>
               <td class="score-cell good">88</td>
               <td><code>pte-hello-world-note</code></td>
               <td>W1</td>
-              <td class="chev-cell"><span class="chev" id="chev-ax-reasoning-quality-claude-code">&#9654;</span></td>
+              <td class="chev-cell"><span class="chev" id="chev-ax-functional-correctness-static">&#9654;</span></td>
             </tr>
-            <tr class="drill-body-tr" id="body-ax-reasoning-quality-claude-code">
-              <td colspan="6"><div class="reasoning-box">Agent followed spec faithfully — used recommended Error-only validation, kept production-oriented (no Message popup), correct PTE prefix, correct object IDs (50100/50110), correct ToolTip wording. Per metrics it produced exactly the two files needed without churn.</div></td>
-            </tr>
-            <tr class="drill-tr" onclick="toggleDrill('ax-reasoning-quality-static')">
-              <td>🥈</td>
-              <td><strong>Darts</strong></td>
-              <td class="score-cell good">80</td>
-              <td><code>pte-hello-world-note</code></td>
-              <td>W1</td>
-              <td class="chev-cell"><span class="chev" id="chev-ax-reasoning-quality-static">&#9654;</span></td>
-            </tr>
-            <tr class="drill-body-tr" id="body-ax-reasoning-quality-static">
-              <td colspan="6"><div class="reasoning-box">This is a static submission (agent.log records `static_submission`), so reasoning is the human author&#x27;s. The chosen design is correct: validation lives in the table-layer OnValidate per spec §9, blank-allowed early-exit matches TS-03, error message matches spec wording, GuiAllowed guard around Message is a sensible touch. Comments tag tests (TS-01..TS-10) but are slightly mis-numbered vs the spec table.</div></td>
+            <tr class="drill-body-tr" id="body-ax-functional-correctness-static">
+              <td colspan="6"><div class="reasoning-box">Verified at runtime in the BC web client (CRONUS / Aravindworkspace): opened Customer Card for customer 10000 (Adatum Corporation), the &#x27;Hello World Note&#x27; field renders at the end of the General fasttab as required (textbox ref f1e968). Typing &#x27;Hi&#x27; and tabbing off triggers the OnValidate error &#x27;Hello World Note must be at least 3 characters long.&#x27; which matches the spec&#x27;s TS-05 negative case. Blank-allowed and ≥3-char success paths are coded correctly (CustomerExt.al:13-23). Minor deduction because the unsolicited Message() popup on every successful validate (CustomerExt.al:22-23) is intrusive — spec explicitly recommends omitting it for production.</div></td>
             </tr></tbody>
               </table>
             </div>
@@ -335,187 +288,46 @@
             <div class="table-wrap">
               <table>
                 <thead><tr><th>Agent</th><th>W1: May 08 – May 14, 2026</th></tr></thead>
-                <tbody><tr><td><strong>Claude Code</strong></td><td class="score-cell good">88</td></tr><tr><td><strong>Darts</strong></td><td class="score-cell good">80</td></tr></tbody>
+                <tbody><tr><td><strong>Claude Code</strong></td><td class="score-cell good">96</td></tr><tr><td><strong>Darts</strong></td><td class="score-cell good">88</td></tr></tbody>
               </table>
             </div>
           </div>
         </div>
         <div class="accordion-block">
-          <div class="accordion-header" onclick="toggleAccordion('efficiency')">
+          <div class="accordion-header" onclick="toggleAccordion('code-quality')">
             <div>
-              <div class="accordion-title">Efficiency</div>
-              <div class="accordion-sub">Minimum necessary work, no redundant edits or wasted output.</div>
+              <div class="accordion-title">code_quality</div>
+              <div class="accordion-sub"></div>
             </div>
-            <span class="chev" id="achev-efficiency">&#9654;</span>
+            <span class="chev" id="achev-code-quality">&#9654;</span>
           </div>
-          <div class="accordion-body" id="abody-efficiency">
+          <div class="accordion-body" id="abody-code-quality">
             <div class="inner-label">Rankings</div>
             <div class="table-wrap">
               <table>
                 <thead><tr><th></th><th>Agent</th><th>Score</th><th>Use-case</th><th>Week</th><th></th></tr></thead>
                 <tbody>
-            <tr class="drill-tr" onclick="toggleDrill('ax-efficiency-claude-code')">
+            <tr class="drill-tr" onclick="toggleDrill('ax-code-quality-claude-code')">
               <td>🥇</td>
               <td><strong>Claude Code</strong></td>
-              <td class="score-cell good">92</td>
+              <td class="score-cell good">90</td>
               <td><code>pte-hello-world-note</code></td>
               <td>W1</td>
-              <td class="chev-cell"><span class="chev" id="chev-ax-efficiency-claude-code">&#9654;</span></td>
+              <td class="chev-cell"><span class="chev" id="chev-ax-code-quality-claude-code">&#9654;</span></td>
             </tr>
-            <tr class="drill-body-tr" id="body-ax-efficiency-claude-code">
-              <td colspan="6"><div class="reasoning-box">tool_call_counts: Read=4, Glob=3, Write=2, Bash=1 — minimal, no redundant edits. compile_attempts_by_agent=0 (relied on harness compile, which succeeded first try). Two files written, two files needed.</div></td>
+            <tr class="drill-body-tr" id="body-ax-code-quality-claude-code">
+              <td colspan="6"><div class="reasoning-box">Two-file split is idiomatic (PTECustomerExt.TableExt.al, PTECustomerCardExt.PageExt.al). Required properties present: Caption, DataClassification=CustomerContent on the field; ApplicationArea=All, Caption, ToolTip on the page control. PTE prefix and IDs (table-ext 50100, page-ext 50110, field 50100) sit cleanly in the 50000-99999 range. OnValidate guards blank-then-length in correct order. Minor: app.json brief/description are empty strings and the page-control name &#x27;PTEHelloWorldNote&#x27; uses no space while the field uses spaces — consistent with the spec&#x27;s example but a small style nit.</div></td>
             </tr>
-            <tr class="drill-tr" onclick="toggleDrill('ax-efficiency-static')">
-              <td>🥈</td>
-              <td><strong>Darts</strong></td>
-              <td class="score-cell ok">75</td>
-              <td><code>pte-hello-world-note</code></td>
-              <td>W1</td>
-              <td class="chev-cell"><span class="chev" id="chev-ax-efficiency-static">&#9654;</span></td>
-            </tr>
-            <tr class="drill-body-tr" id="body-ax-efficiency-static">
-              <td colspan="6"><div class="reasoning-box">Static submission — no agent tool churn (`tool_use` count = 0, errors = 0). Submission contains files beyond strict spec scope (codeunit, list extension, permissionset that section 17 explicitly excludes), so source-line efficiency is mid-range; the in-scope deliverables are minimal.</div></td>
-            </tr></tbody>
-              </table>
-            </div>
-            <div class="inner-label" style="margin-top:20px">Week-by-week trend</div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Agent</th><th>W1: May 08 – May 14, 2026</th></tr></thead>
-                <tbody><tr><td><strong>Claude Code</strong></td><td class="score-cell good">92</td></tr><tr><td><strong>Darts</strong></td><td class="score-cell ok">75</td></tr></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <div class="accordion-block">
-          <div class="accordion-header" onclick="toggleAccordion('speed')">
-            <div>
-              <div class="accordion-title">Speed</div>
-              <div class="accordion-sub">Reasonable wall-clock for the task complexity.</div>
-            </div>
-            <span class="chev" id="achev-speed">&#9654;</span>
-          </div>
-          <div class="accordion-body" id="abody-speed">
-            <div class="inner-label">Rankings</div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th></th><th>Agent</th><th>Score</th><th>Use-case</th><th>Week</th><th></th></tr></thead>
-                <tbody>
-            <tr class="drill-tr" onclick="toggleDrill('ax-speed-static')">
-              <td>🥇</td>
-              <td><strong>Darts</strong></td>
-              <td class="score-cell good">95</td>
-              <td><code>pte-hello-world-note</code></td>
-              <td>W1</td>
-              <td class="chev-cell"><span class="chev" id="chev-ax-speed-static">&#9654;</span></td>
-            </tr>
-            <tr class="drill-body-tr" id="body-ax-speed-static">
-              <td colspan="6"><div class="reasoning-box">Static-file copy: compile finished in ~6 seconds (compile.log 20:32:19→20:32:25). Effectively instant deployment with no agent turns.</div></td>
-            </tr>
-            <tr class="drill-tr" onclick="toggleDrill('ax-speed-claude-code')">
-              <td>🥈</td>
-              <td><strong>Claude Code</strong></td>
-              <td class="score-cell good">88</td>
-              <td><code>pte-hello-world-note</code></td>
-              <td>W1</td>
-              <td class="chev-cell"><span class="chev" id="chev-ax-speed-claude-code">&#9654;</span></td>
-            </tr>
-            <tr class="drill-body-tr" id="body-ax-speed-claude-code">
-              <td colspan="6"><div class="reasoning-box">Simple two-file extension; agent stream shows ~10 tool uses with one early grep error (is_error=1). Cost $0.31 total — reasonable for a minimal extension task.</div></td>
-            </tr></tbody>
-              </table>
-            </div>
-            <div class="inner-label" style="margin-top:20px">Week-by-week trend</div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Agent</th><th>W1: May 08 – May 14, 2026</th></tr></thead>
-                <tbody><tr><td><strong>Claude Code</strong></td><td class="score-cell good">88</td></tr><tr><td><strong>Darts</strong></td><td class="score-cell good">95</td></tr></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <div class="accordion-block">
-          <div class="accordion-header" onclick="toggleAccordion('error-recovery')">
-            <div>
-              <div class="accordion-title">Error recovery</div>
-              <div class="accordion-sub">Surgical fixes when compile errors occurred; self-verified before completion.</div>
-            </div>
-            <span class="chev" id="achev-error-recovery">&#9654;</span>
-          </div>
-          <div class="accordion-body" id="abody-error-recovery">
-            <div class="inner-label">Rankings</div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th></th><th>Agent</th><th>Score</th><th>Use-case</th><th>Week</th><th></th></tr></thead>
-                <tbody>
-            <tr class="drill-tr" onclick="toggleDrill('ax-error-recovery-claude-code')">
-              <td>🥇</td>
-              <td><strong>Claude Code</strong></td>
-              <td class="score-cell good">80</td>
-              <td><code>pte-hello-world-note</code></td>
-              <td>W1</td>
-              <td class="chev-cell"><span class="chev" id="chev-ax-error-recovery-claude-code">&#9654;</span></td>
-            </tr>
-            <tr class="drill-body-tr" id="body-ax-error-recovery-claude-code">
-              <td colspan="6"><div class="reasoning-box">1 is_error in agent.log but agent recovered without thrash. Did not run its own al compile (compile_attempts_by_agent=0); deferred verification to harness, which compiled clean (0 errors, 0 warnings). Slight ding for not self-verifying.</div></td>
-            </tr>
-            <tr class="drill-tr" onclick="toggleDrill('ax-error-recovery-static')">
-              <td>🥈</td>
-              <td><strong>Darts</strong></td>
-              <td class="score-cell good">80</td>
-              <td><code>pte-hello-world-note</code></td>
-              <td>W1</td>
-              <td class="chev-cell"><span class="chev" id="chev-ax-error-recovery-static">&#9654;</span></td>
-            </tr>
-            <tr class="drill-body-tr" id="body-ax-error-recovery-static">
-              <td colspan="6"><div class="reasoning-box">N/A in practice — static submission with zero failed tool calls (`is_error:true` count = 0) and clean compile/publish. No errors to recover from; default to mid-high.</div></td>
-            </tr></tbody>
-              </table>
-            </div>
-            <div class="inner-label" style="margin-top:20px">Week-by-week trend</div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Agent</th><th>W1: May 08 – May 14, 2026</th></tr></thead>
-                <tbody><tr><td><strong>Claude Code</strong></td><td class="score-cell good">80</td></tr><tr><td><strong>Darts</strong></td><td class="score-cell good">80</td></tr></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <div class="accordion-block">
-          <div class="accordion-header" onclick="toggleAccordion('autonomy')">
-            <div>
-              <div class="accordion-title">Autonomy</div>
-              <div class="accordion-sub">Completed end-to-end without clarification, no stuck loops.</div>
-            </div>
-            <span class="chev" id="achev-autonomy">&#9654;</span>
-          </div>
-          <div class="accordion-body" id="abody-autonomy">
-            <div class="inner-label">Rankings</div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th></th><th>Agent</th><th>Score</th><th>Use-case</th><th>Week</th><th></th></tr></thead>
-                <tbody>
-            <tr class="drill-tr" onclick="toggleDrill('ax-autonomy-claude-code')">
-              <td>🥇</td>
-              <td><strong>Claude Code</strong></td>
-              <td class="score-cell good">98</td>
-              <td><code>pte-hello-world-note</code></td>
-              <td>W1</td>
-              <td class="chev-cell"><span class="chev" id="chev-ax-autonomy-claude-code">&#9654;</span></td>
-            </tr>
-            <tr class="drill-body-tr" id="body-ax-autonomy-claude-code">
-              <td colspan="6"><div class="reasoning-box">End-to-end completion with terminal_reason=completed, no clarifying questions, no permission denials, no stuck loops. Final summary cites both file paths and notes the production-oriented choice.</div></td>
-            </tr>
-            <tr class="drill-tr" onclick="toggleDrill('ax-autonomy-static')">
+            <tr class="drill-tr" onclick="toggleDrill('ax-code-quality-static')">
               <td>🥈</td>
               <td><strong>Darts</strong></td>
               <td class="score-cell ok">70</td>
               <td><code>pte-hello-world-note</code></td>
               <td>W1</td>
-              <td class="chev-cell"><span class="chev" id="chev-ax-autonomy-static">&#9654;</span></td>
+              <td class="chev-cell"><span class="chev" id="chev-ax-code-quality-static">&#9654;</span></td>
             </tr>
-            <tr class="drill-body-tr" id="body-ax-autonomy-static">
-              <td colspan="6"><div class="reasoning-box">Not a true autonomous agent run — static.py simply copied pre-written .al files into the workspace (agent.log: `{&quot;type&quot;: &quot;static_submission&quot;}`). No human intervention during the run, but no autonomous problem-solving either.</div></td>
+            <tr class="drill-body-tr" id="body-ax-code-quality-static">
+              <td colspan="6"><div class="reasoning-box">AL is clean, idiomatic, uses Rec. qualifier (NoImplicitWith), and properties Caption/ToolTip/ApplicationArea/DataClassification are all set (CustomerCardExt.al:9-13). However: tableextension ID is 50000 instead of spec&#x27;s 50100 (CustomerExt.al:1); the field&#x27;s table-level Caption is &#x27;PTE Hello World Note&#x27; rather than &#x27;Hello World Note&#x27; (CustomerExt.al:7) — fine on the page but inconsistent. Additional files (HelloWorld.al codeunit, CustomerListExt.al, PTEHelloWorld.Permissionset.al) clutter the project. ID 50001 for the Customer List extension is out-of-pattern with the 50100/50110 series the spec proposed.</div></td>
             </tr></tbody>
               </table>
             </div>
@@ -523,7 +335,54 @@
             <div class="table-wrap">
               <table>
                 <thead><tr><th>Agent</th><th>W1: May 08 – May 14, 2026</th></tr></thead>
-                <tbody><tr><td><strong>Claude Code</strong></td><td class="score-cell good">98</td></tr><tr><td><strong>Darts</strong></td><td class="score-cell ok">70</td></tr></tbody>
+                <tbody><tr><td><strong>Claude Code</strong></td><td class="score-cell good">90</td></tr><tr><td><strong>Darts</strong></td><td class="score-cell ok">70</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-block">
+          <div class="accordion-header" onclick="toggleAccordion('spec-understanding')">
+            <div>
+              <div class="accordion-title">spec_understanding</div>
+              <div class="accordion-sub"></div>
+            </div>
+            <span class="chev" id="achev-spec-understanding">&#9654;</span>
+          </div>
+          <div class="accordion-body" id="abody-spec-understanding">
+            <div class="inner-label">Rankings</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th></th><th>Agent</th><th>Score</th><th>Use-case</th><th>Week</th><th></th></tr></thead>
+                <tbody>
+            <tr class="drill-tr" onclick="toggleDrill('ax-spec-understanding-claude-code')">
+              <td>🥇</td>
+              <td><strong>Claude Code</strong></td>
+              <td class="score-cell good">96</td>
+              <td><code>pte-hello-world-note</code></td>
+              <td>W1</td>
+              <td class="chev-cell"><span class="chev" id="chev-ax-spec-understanding-claude-code">&#9654;</span></td>
+            </tr>
+            <tr class="drill-body-tr" id="body-ax-spec-understanding-claude-code">
+              <td colspan="6"><div class="reasoning-box">Every acceptance criterion is covered: tableextension+pageextension only (no base mods), single Text[100] field named &#x27;PTE Hello World Note&#x27;, visible on Customer Card General tab via addlast(General), validation error on &lt;3 chars, blank allowed, exact 3 chars accepted (verified live). Object IDs within tenant range and PTE-prefixed per Section 10. Scope discipline is excellent — the agent correctly skipped the optional Message() variant (Section 8 &#x27;Recommendation&#x27; explicitly favors error-only for production) and did not add XLIFF/permission sets that are explicitly out of scope (Section 17).</div></td>
+            </tr>
+            <tr class="drill-tr" onclick="toggleDrill('ax-spec-understanding-static')">
+              <td>🥈</td>
+              <td><strong>Darts</strong></td>
+              <td class="score-cell ok">60</td>
+              <td><code>pte-hello-world-note</code></td>
+              <td>W1</td>
+              <td class="chev-cell"><span class="chev" id="chev-ax-spec-understanding-static">&#9654;</span></td>
+            </tr>
+            <tr class="drill-body-tr" id="body-ax-spec-understanding-static">
+              <td colspan="6"><div class="reasoning-box">All acceptance criteria (1 custom field on Customer table, Text[100], visible on Customer Card, blank allowed, &lt;3-char error) are implemented. But significant scope creep: agent added a &#x27;PTE Hello World&#x27; codeunit, a Customer List pageextension with &#x27;Say Hello&#x27; action, the same action on Customer Card, and a permissionset — none of which the spec asked for. Section 17 of the spec explicitly says permission sets are out of scope. The agent seems to have conflated this minimal extension with a generic &#x27;Hello World&#x27; demo. The comments inside files reference fictitious TS-IDs (e.g. &#x27;TS-10: Permission set...&#x27;) that do not match the actual TS-01..TS-15 in the spec, indicating the agent invented its own test mapping.</div></td>
+            </tr></tbody>
+              </table>
+            </div>
+            <div class="inner-label" style="margin-top:20px">Week-by-week trend</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Agent</th><th>W1: May 08 – May 14, 2026</th></tr></thead>
+                <tbody><tr><td><strong>Claude Code</strong></td><td class="score-cell good">96</td></tr><tr><td><strong>Darts</strong></td><td class="score-cell ok">60</td></tr></tbody>
               </table>
             </div>
           </div>
@@ -736,12 +595,12 @@ This technical requirement document provides all details necessary for rapid dev
             <div class="cards">
             <div class="card">
               <div class="agent">Claude Code</div>
-              <div class="score good">91.4</div>
+              <div class="score good">94.2</div>
               <div class="meta">🥇</div>
             </div>
             <div class="card">
               <div class="agent">Darts</div>
-              <div class="score good">83.1</div>
+              <div class="score ok">74.2</div>
               <div class="meta">🥈</div>
             </div></div>
             <h2>Score breakdown</h2>
@@ -751,37 +610,22 @@ This technical requirement document provides all details necessary for rapid dev
         <thead><tr><th>Axis</th><th>Claude Code</th><th>Darts</th></tr></thead>
         <tbody><tr>
           <td class="axis-name">
-            <div class="axis-title">Task completion</div>
-            <div class="axis-blurb">Did the published extension fulfill the requirement spec, verified at runtime?</div>
-          </td><td class="score-cell good">96</td><td class="score-cell good">92</td>
+            <div class="axis-title">functional_correctness</div>
+            <div class="axis-blurb"></div>
+          </td><td class="score-cell good">96</td><td class="score-cell good">88</td>
         </tr><tr>
           <td class="axis-name">
-            <div class="axis-title">Reasoning quality</div>
-            <div class="axis-blurb">Was the approach logical, BC-aware, idiomatic AL?</div>
-          </td><td class="score-cell good">88</td><td class="score-cell good">80</td>
+            <div class="axis-title">code_quality</div>
+            <div class="axis-blurb"></div>
+          </td><td class="score-cell good">90</td><td class="score-cell ok">70</td>
         </tr><tr>
           <td class="axis-name">
-            <div class="axis-title">Efficiency</div>
-            <div class="axis-blurb">Minimum necessary work, no redundant edits or wasted output.</div>
-          </td><td class="score-cell good">92</td><td class="score-cell ok">75</td>
-        </tr><tr>
-          <td class="axis-name">
-            <div class="axis-title">Speed</div>
-            <div class="axis-blurb">Reasonable wall-clock for the task complexity.</div>
-          </td><td class="score-cell good">88</td><td class="score-cell good">95</td>
-        </tr><tr>
-          <td class="axis-name">
-            <div class="axis-title">Error recovery</div>
-            <div class="axis-blurb">Surgical fixes when compile errors occurred; self-verified before completion.</div>
-          </td><td class="score-cell good">80</td><td class="score-cell good">80</td>
-        </tr><tr>
-          <td class="axis-name">
-            <div class="axis-title">Autonomy</div>
-            <div class="axis-blurb">Completed end-to-end without clarification, no stuck loops.</div>
-          </td><td class="score-cell good">98</td><td class="score-cell ok">70</td>
+            <div class="axis-title">spec_understanding</div>
+            <div class="axis-blurb"></div>
+          </td><td class="score-cell good">96</td><td class="score-cell ok">60</td>
         </tr><tr>
       <td class="axis-name"><div class="axis-title"><strong>Weighted total</strong></div></td>
-      <td class="score-cell good"><strong>91.4</strong></td><td class="score-cell good"><strong>83.1</strong></td>
+      <td class="score-cell good"><strong>94.2</strong></td><td class="score-cell ok"><strong>74.2</strong></td>
     </tr></tbody>
       </table>
     </div>
@@ -789,7 +633,7 @@ This technical requirement document provides all details necessary for rapid dev
             
     <div class="agent-section">
       <div class="agent-summary">
-        <div class="agent-score good">91.4<span class="agent-score-label">weighted</span></div>
+        <div class="agent-score good">94.2<span class="agent-score-label">weighted</span></div>
         <div>
           <h2 style="margin:0 0 4px">Claude Code</h2>
           <div style="font-size:13px;color:var(--muted)">2 files produced</div>
@@ -797,57 +641,33 @@ This technical requirement document provides all details necessary for rapid dev
       </div>
       
         <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-claude-code-task-completion')">
-            <span class="ax-label">Task completion</span>
+          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-claude-code-functional-correctness')">
+            <span class="ax-label">functional_correctness</span>
             <span class="ax-score good">96</span>
-            <span class="chev" id="chev-w0-pte-hello-world-note-claude-code-task-completion">&#9654;</span>
+            <span class="chev" id="chev-w0-pte-hello-world-note-claude-code-functional-correctness">&#9654;</span>
           </div>
-          <div class="ax-text" id="body-w0-pte-hello-world-note-claude-code-task-completion">All acceptance criteria met. tableextension 50100 declares Text[100] field with OnValidate min-length check (workspace/PTECustomerExt.TableExt.al), pageextension 50110 places it via addlast(General) on Customer Card. Extension &#x27;bsbench-pte-hello-world-note&#x27; confirmed installed via Automation API. Playwright verified: field renders on Customer Card General FastTab with correct caption &#x27;Hello World Note&#x27; and correct ToolTip; entering &#x27;Hi&#x27; triggers exact error &#x27;Hello World Note must contain at least 3 characters&#x27;.</div>
+          <div class="ax-text" id="body-w0-pte-hello-world-note-claude-code-functional-correctness">Verified end-to-end in BC web client: the &#x27;Hello World Note&#x27; field renders at the end of the General FastTab on Customer Card 10000 (Adatum Corporation). Entering &#x27;Hi&#x27; (2 chars) raised the exact spec error &#x27;Hello World Note must contain at least 3 characters&#x27; (confirmed in DOM at line &#x27;Hello World Note must contain at least 3 characters&#x27;). Entering &#x27;ABC&#x27; (3 chars) was accepted and the page transitioned from &#x27;Not saved&#x27; to &#x27;Saved&#x27;. Blank handling allowed by the early exit in OnValidate. Extension published cleanly (publish.log shows success, no compile errors).</div>
         </div>
         <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-claude-code-reasoning-quality')">
-            <span class="ax-label">Reasoning quality</span>
-            <span class="ax-score good">88</span>
-            <span class="chev" id="chev-w0-pte-hello-world-note-claude-code-reasoning-quality">&#9654;</span>
+          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-claude-code-code-quality')">
+            <span class="ax-label">code_quality</span>
+            <span class="ax-score good">90</span>
+            <span class="chev" id="chev-w0-pte-hello-world-note-claude-code-code-quality">&#9654;</span>
           </div>
-          <div class="ax-text" id="body-w0-pte-hello-world-note-claude-code-reasoning-quality">Agent followed spec faithfully — used recommended Error-only validation, kept production-oriented (no Message popup), correct PTE prefix, correct object IDs (50100/50110), correct ToolTip wording. Per metrics it produced exactly the two files needed without churn.</div>
+          <div class="ax-text" id="body-w0-pte-hello-world-note-claude-code-code-quality">Two-file split is idiomatic (PTECustomerExt.TableExt.al, PTECustomerCardExt.PageExt.al). Required properties present: Caption, DataClassification=CustomerContent on the field; ApplicationArea=All, Caption, ToolTip on the page control. PTE prefix and IDs (table-ext 50100, page-ext 50110, field 50100) sit cleanly in the 50000-99999 range. OnValidate guards blank-then-length in correct order. Minor: app.json brief/description are empty strings and the page-control name &#x27;PTEHelloWorldNote&#x27; uses no space while the field uses spaces — consistent with the spec&#x27;s example but a small style nit.</div>
         </div>
         <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-claude-code-efficiency')">
-            <span class="ax-label">Efficiency</span>
-            <span class="ax-score good">92</span>
-            <span class="chev" id="chev-w0-pte-hello-world-note-claude-code-efficiency">&#9654;</span>
+          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-claude-code-spec-understanding')">
+            <span class="ax-label">spec_understanding</span>
+            <span class="ax-score good">96</span>
+            <span class="chev" id="chev-w0-pte-hello-world-note-claude-code-spec-understanding">&#9654;</span>
           </div>
-          <div class="ax-text" id="body-w0-pte-hello-world-note-claude-code-efficiency">tool_call_counts: Read=4, Glob=3, Write=2, Bash=1 — minimal, no redundant edits. compile_attempts_by_agent=0 (relied on harness compile, which succeeded first try). Two files written, two files needed.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-claude-code-speed')">
-            <span class="ax-label">Speed</span>
-            <span class="ax-score good">88</span>
-            <span class="chev" id="chev-w0-pte-hello-world-note-claude-code-speed">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-w0-pte-hello-world-note-claude-code-speed">Simple two-file extension; agent stream shows ~10 tool uses with one early grep error (is_error=1). Cost $0.31 total — reasonable for a minimal extension task.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-claude-code-error-recovery')">
-            <span class="ax-label">Error recovery</span>
-            <span class="ax-score good">80</span>
-            <span class="chev" id="chev-w0-pte-hello-world-note-claude-code-error-recovery">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-w0-pte-hello-world-note-claude-code-error-recovery">1 is_error in agent.log but agent recovered without thrash. Did not run its own al compile (compile_attempts_by_agent=0); deferred verification to harness, which compiled clean (0 errors, 0 warnings). Slight ding for not self-verifying.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-claude-code-autonomy')">
-            <span class="ax-label">Autonomy</span>
-            <span class="ax-score good">98</span>
-            <span class="chev" id="chev-w0-pte-hello-world-note-claude-code-autonomy">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-w0-pte-hello-world-note-claude-code-autonomy">End-to-end completion with terminal_reason=completed, no clarifying questions, no permission denials, no stuck loops. Final summary cites both file paths and notes the production-oriented choice.</div>
+          <div class="ax-text" id="body-w0-pte-hello-world-note-claude-code-spec-understanding">Every acceptance criterion is covered: tableextension+pageextension only (no base mods), single Text[100] field named &#x27;PTE Hello World Note&#x27;, visible on Customer Card General tab via addlast(General), validation error on &lt;3 chars, blank allowed, exact 3 chars accepted (verified live). Object IDs within tenant range and PTE-prefixed per Section 10. Scope discipline is excellent — the agent correctly skipped the optional Message() variant (Section 8 &#x27;Recommendation&#x27; explicitly favors error-only for production) and did not add XLIFF/permission sets that are explicitly out of scope (Section 17).</div>
         </div>
     </div>
     <div class="agent-section">
       <div class="agent-summary">
-        <div class="agent-score good">83.1<span class="agent-score-label">weighted</span></div>
+        <div class="agent-score ok">74.2<span class="agent-score-label">weighted</span></div>
         <div>
           <h2 style="margin:0 0 4px">Darts</h2>
           <div style="font-size:13px;color:var(--muted)">5 files produced</div>
@@ -855,52 +675,28 @@ This technical requirement document provides all details necessary for rapid dev
       </div>
       
         <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-static-task-completion')">
-            <span class="ax-label">Task completion</span>
-            <span class="ax-score good">92</span>
-            <span class="chev" id="chev-w0-pte-hello-world-note-static-task-completion">&#9654;</span>
+          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-static-functional-correctness')">
+            <span class="ax-label">functional_correctness</span>
+            <span class="ax-score good">88</span>
+            <span class="chev" id="chev-w0-pte-hello-world-note-static-functional-correctness">&#9654;</span>
           </div>
-          <div class="ax-text" id="body-w0-pte-hello-world-note-static-task-completion">All acceptance criteria verified: tableextension with `PTE Hello World Note` Text[100] (CustomerExt.al), pageextension addlast(General) on Customer Card (CustomerCardExt.al), no base object modifications. Compile and publish succeeded (compile.log, publish.log). Playwright verification: opened Customer Card for Adatum Corporation, field visible in General tab; typed &#x27;Hi&#x27; (2 chars) and the OnValidate trigger raised exactly &#x27;Hello World Note must be at least 3 characters long.&#x27; Minor: agent added out-of-spec extras (HelloWorld codeunit, CustomerListExt, Permissionset, optional Message popup) and used object IDs 50000/50110 instead of the suggested 50100/50110 — within idRange so harmless.</div>
+          <div class="ax-text" id="body-w0-pte-hello-world-note-static-functional-correctness">Verified at runtime in the BC web client (CRONUS / Aravindworkspace): opened Customer Card for customer 10000 (Adatum Corporation), the &#x27;Hello World Note&#x27; field renders at the end of the General fasttab as required (textbox ref f1e968). Typing &#x27;Hi&#x27; and tabbing off triggers the OnValidate error &#x27;Hello World Note must be at least 3 characters long.&#x27; which matches the spec&#x27;s TS-05 negative case. Blank-allowed and ≥3-char success paths are coded correctly (CustomerExt.al:13-23). Minor deduction because the unsolicited Message() popup on every successful validate (CustomerExt.al:22-23) is intrusive — spec explicitly recommends omitting it for production.</div>
         </div>
         <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-static-reasoning-quality')">
-            <span class="ax-label">Reasoning quality</span>
-            <span class="ax-score good">80</span>
-            <span class="chev" id="chev-w0-pte-hello-world-note-static-reasoning-quality">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-w0-pte-hello-world-note-static-reasoning-quality">This is a static submission (agent.log records `static_submission`), so reasoning is the human author&#x27;s. The chosen design is correct: validation lives in the table-layer OnValidate per spec §9, blank-allowed early-exit matches TS-03, error message matches spec wording, GuiAllowed guard around Message is a sensible touch. Comments tag tests (TS-01..TS-10) but are slightly mis-numbered vs the spec table.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-static-efficiency')">
-            <span class="ax-label">Efficiency</span>
-            <span class="ax-score ok">75</span>
-            <span class="chev" id="chev-w0-pte-hello-world-note-static-efficiency">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-w0-pte-hello-world-note-static-efficiency">Static submission — no agent tool churn (`tool_use` count = 0, errors = 0). Submission contains files beyond strict spec scope (codeunit, list extension, permissionset that section 17 explicitly excludes), so source-line efficiency is mid-range; the in-scope deliverables are minimal.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-static-speed')">
-            <span class="ax-label">Speed</span>
-            <span class="ax-score good">95</span>
-            <span class="chev" id="chev-w0-pte-hello-world-note-static-speed">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-w0-pte-hello-world-note-static-speed">Static-file copy: compile finished in ~6 seconds (compile.log 20:32:19→20:32:25). Effectively instant deployment with no agent turns.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-static-error-recovery')">
-            <span class="ax-label">Error recovery</span>
-            <span class="ax-score good">80</span>
-            <span class="chev" id="chev-w0-pte-hello-world-note-static-error-recovery">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-w0-pte-hello-world-note-static-error-recovery">N/A in practice — static submission with zero failed tool calls (`is_error:true` count = 0) and clean compile/publish. No errors to recover from; default to mid-high.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-static-autonomy')">
-            <span class="ax-label">Autonomy</span>
+          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-static-code-quality')">
+            <span class="ax-label">code_quality</span>
             <span class="ax-score ok">70</span>
-            <span class="chev" id="chev-w0-pte-hello-world-note-static-autonomy">&#9654;</span>
+            <span class="chev" id="chev-w0-pte-hello-world-note-static-code-quality">&#9654;</span>
           </div>
-          <div class="ax-text" id="body-w0-pte-hello-world-note-static-autonomy">Not a true autonomous agent run — static.py simply copied pre-written .al files into the workspace (agent.log: `{&quot;type&quot;: &quot;static_submission&quot;}`). No human intervention during the run, but no autonomous problem-solving either.</div>
+          <div class="ax-text" id="body-w0-pte-hello-world-note-static-code-quality">AL is clean, idiomatic, uses Rec. qualifier (NoImplicitWith), and properties Caption/ToolTip/ApplicationArea/DataClassification are all set (CustomerCardExt.al:9-13). However: tableextension ID is 50000 instead of spec&#x27;s 50100 (CustomerExt.al:1); the field&#x27;s table-level Caption is &#x27;PTE Hello World Note&#x27; rather than &#x27;Hello World Note&#x27; (CustomerExt.al:7) — fine on the page but inconsistent. Additional files (HelloWorld.al codeunit, CustomerListExt.al, PTEHelloWorld.Permissionset.al) clutter the project. ID 50001 for the Customer List extension is out-of-pattern with the 50100/50110 series the spec proposed.</div>
+        </div>
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-static-spec-understanding')">
+            <span class="ax-label">spec_understanding</span>
+            <span class="ax-score ok">60</span>
+            <span class="chev" id="chev-w0-pte-hello-world-note-static-spec-understanding">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-w0-pte-hello-world-note-static-spec-understanding">All acceptance criteria (1 custom field on Customer table, Text[100], visible on Customer Card, blank allowed, &lt;3-char error) are implemented. But significant scope creep: agent added a &#x27;PTE Hello World&#x27; codeunit, a Customer List pageextension with &#x27;Say Hello&#x27; action, the same action on Customer Card, and a permissionset — none of which the spec asked for. Section 17 of the spec explicitly says permission sets are out of scope. The agent seems to have conflated this minimal extension with a generic &#x27;Hello World&#x27; demo. The comments inside files reference fictitious TS-IDs (e.g. &#x27;TS-10: Permission set...&#x27;) that do not match the actual TS-01..TS-15 in the spec, indicating the agent invented its own test mapping.</div>
         </div>
     </div>
           </div>
@@ -1106,12 +902,12 @@ This technical requirement document provides all details necessary for rapid dev
           <div class="cards">
             <div class="card">
               <div class="agent">Claude Code</div>
-              <div class="score good">91.4</div>
+              <div class="score good">94.2</div>
               <div class="meta">🥇</div>
             </div>
             <div class="card">
               <div class="agent">Darts</div>
-              <div class="score good">83.1</div>
+              <div class="score ok">74.2</div>
               <div class="meta">🥈</div>
             </div></div>
           <h2>Score breakdown</h2>
@@ -1121,37 +917,22 @@ This technical requirement document provides all details necessary for rapid dev
         <thead><tr><th>Axis</th><th>Claude Code</th><th>Darts</th></tr></thead>
         <tbody><tr>
           <td class="axis-name">
-            <div class="axis-title">Task completion</div>
-            <div class="axis-blurb">Did the published extension fulfill the requirement spec, verified at runtime?</div>
-          </td><td class="score-cell good">96</td><td class="score-cell good">92</td>
+            <div class="axis-title">functional_correctness</div>
+            <div class="axis-blurb"></div>
+          </td><td class="score-cell good">96</td><td class="score-cell good">88</td>
         </tr><tr>
           <td class="axis-name">
-            <div class="axis-title">Reasoning quality</div>
-            <div class="axis-blurb">Was the approach logical, BC-aware, idiomatic AL?</div>
-          </td><td class="score-cell good">88</td><td class="score-cell good">80</td>
+            <div class="axis-title">code_quality</div>
+            <div class="axis-blurb"></div>
+          </td><td class="score-cell good">90</td><td class="score-cell ok">70</td>
         </tr><tr>
           <td class="axis-name">
-            <div class="axis-title">Efficiency</div>
-            <div class="axis-blurb">Minimum necessary work, no redundant edits or wasted output.</div>
-          </td><td class="score-cell good">92</td><td class="score-cell ok">75</td>
-        </tr><tr>
-          <td class="axis-name">
-            <div class="axis-title">Speed</div>
-            <div class="axis-blurb">Reasonable wall-clock for the task complexity.</div>
-          </td><td class="score-cell good">88</td><td class="score-cell good">95</td>
-        </tr><tr>
-          <td class="axis-name">
-            <div class="axis-title">Error recovery</div>
-            <div class="axis-blurb">Surgical fixes when compile errors occurred; self-verified before completion.</div>
-          </td><td class="score-cell good">80</td><td class="score-cell good">80</td>
-        </tr><tr>
-          <td class="axis-name">
-            <div class="axis-title">Autonomy</div>
-            <div class="axis-blurb">Completed end-to-end without clarification, no stuck loops.</div>
-          </td><td class="score-cell good">98</td><td class="score-cell ok">70</td>
+            <div class="axis-title">spec_understanding</div>
+            <div class="axis-blurb"></div>
+          </td><td class="score-cell good">96</td><td class="score-cell ok">60</td>
         </tr><tr>
       <td class="axis-name"><div class="axis-title"><strong>Weighted total</strong></div></td>
-      <td class="score-cell good"><strong>91.4</strong></td><td class="score-cell good"><strong>83.1</strong></td>
+      <td class="score-cell good"><strong>94.2</strong></td><td class="score-cell ok"><strong>74.2</strong></td>
     </tr></tbody>
       </table>
     </div>
@@ -1160,7 +941,7 @@ This technical requirement document provides all details necessary for rapid dev
           
     <div class="agent-section">
       <div class="agent-summary">
-        <div class="agent-score good">91.4<span class="agent-score-label">weighted</span></div>
+        <div class="agent-score good">94.2<span class="agent-score-label">weighted</span></div>
         <div>
           <h2 style="margin:0 0 4px">Claude Code</h2>
           <div style="font-size:13px;color:var(--muted)">2 files produced</div>
@@ -1168,57 +949,33 @@ This technical requirement document provides all details necessary for rapid dev
       </div>
       
         <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-claude-code-task-completion')">
-            <span class="ax-label">Task completion</span>
+          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-claude-code-functional-correctness')">
+            <span class="ax-label">functional_correctness</span>
             <span class="ax-score good">96</span>
-            <span class="chev" id="chev-uc-pte-hello-world-note-claude-code-task-completion">&#9654;</span>
+            <span class="chev" id="chev-uc-pte-hello-world-note-claude-code-functional-correctness">&#9654;</span>
           </div>
-          <div class="ax-text" id="body-uc-pte-hello-world-note-claude-code-task-completion">All acceptance criteria met. tableextension 50100 declares Text[100] field with OnValidate min-length check (workspace/PTECustomerExt.TableExt.al), pageextension 50110 places it via addlast(General) on Customer Card. Extension &#x27;bsbench-pte-hello-world-note&#x27; confirmed installed via Automation API. Playwright verified: field renders on Customer Card General FastTab with correct caption &#x27;Hello World Note&#x27; and correct ToolTip; entering &#x27;Hi&#x27; triggers exact error &#x27;Hello World Note must contain at least 3 characters&#x27;.</div>
+          <div class="ax-text" id="body-uc-pte-hello-world-note-claude-code-functional-correctness">Verified end-to-end in BC web client: the &#x27;Hello World Note&#x27; field renders at the end of the General FastTab on Customer Card 10000 (Adatum Corporation). Entering &#x27;Hi&#x27; (2 chars) raised the exact spec error &#x27;Hello World Note must contain at least 3 characters&#x27; (confirmed in DOM at line &#x27;Hello World Note must contain at least 3 characters&#x27;). Entering &#x27;ABC&#x27; (3 chars) was accepted and the page transitioned from &#x27;Not saved&#x27; to &#x27;Saved&#x27;. Blank handling allowed by the early exit in OnValidate. Extension published cleanly (publish.log shows success, no compile errors).</div>
         </div>
         <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-claude-code-reasoning-quality')">
-            <span class="ax-label">Reasoning quality</span>
-            <span class="ax-score good">88</span>
-            <span class="chev" id="chev-uc-pte-hello-world-note-claude-code-reasoning-quality">&#9654;</span>
+          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-claude-code-code-quality')">
+            <span class="ax-label">code_quality</span>
+            <span class="ax-score good">90</span>
+            <span class="chev" id="chev-uc-pte-hello-world-note-claude-code-code-quality">&#9654;</span>
           </div>
-          <div class="ax-text" id="body-uc-pte-hello-world-note-claude-code-reasoning-quality">Agent followed spec faithfully — used recommended Error-only validation, kept production-oriented (no Message popup), correct PTE prefix, correct object IDs (50100/50110), correct ToolTip wording. Per metrics it produced exactly the two files needed without churn.</div>
+          <div class="ax-text" id="body-uc-pte-hello-world-note-claude-code-code-quality">Two-file split is idiomatic (PTECustomerExt.TableExt.al, PTECustomerCardExt.PageExt.al). Required properties present: Caption, DataClassification=CustomerContent on the field; ApplicationArea=All, Caption, ToolTip on the page control. PTE prefix and IDs (table-ext 50100, page-ext 50110, field 50100) sit cleanly in the 50000-99999 range. OnValidate guards blank-then-length in correct order. Minor: app.json brief/description are empty strings and the page-control name &#x27;PTEHelloWorldNote&#x27; uses no space while the field uses spaces — consistent with the spec&#x27;s example but a small style nit.</div>
         </div>
         <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-claude-code-efficiency')">
-            <span class="ax-label">Efficiency</span>
-            <span class="ax-score good">92</span>
-            <span class="chev" id="chev-uc-pte-hello-world-note-claude-code-efficiency">&#9654;</span>
+          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-claude-code-spec-understanding')">
+            <span class="ax-label">spec_understanding</span>
+            <span class="ax-score good">96</span>
+            <span class="chev" id="chev-uc-pte-hello-world-note-claude-code-spec-understanding">&#9654;</span>
           </div>
-          <div class="ax-text" id="body-uc-pte-hello-world-note-claude-code-efficiency">tool_call_counts: Read=4, Glob=3, Write=2, Bash=1 — minimal, no redundant edits. compile_attempts_by_agent=0 (relied on harness compile, which succeeded first try). Two files written, two files needed.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-claude-code-speed')">
-            <span class="ax-label">Speed</span>
-            <span class="ax-score good">88</span>
-            <span class="chev" id="chev-uc-pte-hello-world-note-claude-code-speed">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-uc-pte-hello-world-note-claude-code-speed">Simple two-file extension; agent stream shows ~10 tool uses with one early grep error (is_error=1). Cost $0.31 total — reasonable for a minimal extension task.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-claude-code-error-recovery')">
-            <span class="ax-label">Error recovery</span>
-            <span class="ax-score good">80</span>
-            <span class="chev" id="chev-uc-pte-hello-world-note-claude-code-error-recovery">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-uc-pte-hello-world-note-claude-code-error-recovery">1 is_error in agent.log but agent recovered without thrash. Did not run its own al compile (compile_attempts_by_agent=0); deferred verification to harness, which compiled clean (0 errors, 0 warnings). Slight ding for not self-verifying.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-claude-code-autonomy')">
-            <span class="ax-label">Autonomy</span>
-            <span class="ax-score good">98</span>
-            <span class="chev" id="chev-uc-pte-hello-world-note-claude-code-autonomy">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-uc-pte-hello-world-note-claude-code-autonomy">End-to-end completion with terminal_reason=completed, no clarifying questions, no permission denials, no stuck loops. Final summary cites both file paths and notes the production-oriented choice.</div>
+          <div class="ax-text" id="body-uc-pte-hello-world-note-claude-code-spec-understanding">Every acceptance criterion is covered: tableextension+pageextension only (no base mods), single Text[100] field named &#x27;PTE Hello World Note&#x27;, visible on Customer Card General tab via addlast(General), validation error on &lt;3 chars, blank allowed, exact 3 chars accepted (verified live). Object IDs within tenant range and PTE-prefixed per Section 10. Scope discipline is excellent — the agent correctly skipped the optional Message() variant (Section 8 &#x27;Recommendation&#x27; explicitly favors error-only for production) and did not add XLIFF/permission sets that are explicitly out of scope (Section 17).</div>
         </div>
     </div>
     <div class="agent-section">
       <div class="agent-summary">
-        <div class="agent-score good">83.1<span class="agent-score-label">weighted</span></div>
+        <div class="agent-score ok">74.2<span class="agent-score-label">weighted</span></div>
         <div>
           <h2 style="margin:0 0 4px">Darts</h2>
           <div style="font-size:13px;color:var(--muted)">5 files produced</div>
@@ -1226,52 +983,28 @@ This technical requirement document provides all details necessary for rapid dev
       </div>
       
         <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-static-task-completion')">
-            <span class="ax-label">Task completion</span>
-            <span class="ax-score good">92</span>
-            <span class="chev" id="chev-uc-pte-hello-world-note-static-task-completion">&#9654;</span>
+          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-static-functional-correctness')">
+            <span class="ax-label">functional_correctness</span>
+            <span class="ax-score good">88</span>
+            <span class="chev" id="chev-uc-pte-hello-world-note-static-functional-correctness">&#9654;</span>
           </div>
-          <div class="ax-text" id="body-uc-pte-hello-world-note-static-task-completion">All acceptance criteria verified: tableextension with `PTE Hello World Note` Text[100] (CustomerExt.al), pageextension addlast(General) on Customer Card (CustomerCardExt.al), no base object modifications. Compile and publish succeeded (compile.log, publish.log). Playwright verification: opened Customer Card for Adatum Corporation, field visible in General tab; typed &#x27;Hi&#x27; (2 chars) and the OnValidate trigger raised exactly &#x27;Hello World Note must be at least 3 characters long.&#x27; Minor: agent added out-of-spec extras (HelloWorld codeunit, CustomerListExt, Permissionset, optional Message popup) and used object IDs 50000/50110 instead of the suggested 50100/50110 — within idRange so harmless.</div>
+          <div class="ax-text" id="body-uc-pte-hello-world-note-static-functional-correctness">Verified at runtime in the BC web client (CRONUS / Aravindworkspace): opened Customer Card for customer 10000 (Adatum Corporation), the &#x27;Hello World Note&#x27; field renders at the end of the General fasttab as required (textbox ref f1e968). Typing &#x27;Hi&#x27; and tabbing off triggers the OnValidate error &#x27;Hello World Note must be at least 3 characters long.&#x27; which matches the spec&#x27;s TS-05 negative case. Blank-allowed and ≥3-char success paths are coded correctly (CustomerExt.al:13-23). Minor deduction because the unsolicited Message() popup on every successful validate (CustomerExt.al:22-23) is intrusive — spec explicitly recommends omitting it for production.</div>
         </div>
         <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-static-reasoning-quality')">
-            <span class="ax-label">Reasoning quality</span>
-            <span class="ax-score good">80</span>
-            <span class="chev" id="chev-uc-pte-hello-world-note-static-reasoning-quality">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-uc-pte-hello-world-note-static-reasoning-quality">This is a static submission (agent.log records `static_submission`), so reasoning is the human author&#x27;s. The chosen design is correct: validation lives in the table-layer OnValidate per spec §9, blank-allowed early-exit matches TS-03, error message matches spec wording, GuiAllowed guard around Message is a sensible touch. Comments tag tests (TS-01..TS-10) but are slightly mis-numbered vs the spec table.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-static-efficiency')">
-            <span class="ax-label">Efficiency</span>
-            <span class="ax-score ok">75</span>
-            <span class="chev" id="chev-uc-pte-hello-world-note-static-efficiency">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-uc-pte-hello-world-note-static-efficiency">Static submission — no agent tool churn (`tool_use` count = 0, errors = 0). Submission contains files beyond strict spec scope (codeunit, list extension, permissionset that section 17 explicitly excludes), so source-line efficiency is mid-range; the in-scope deliverables are minimal.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-static-speed')">
-            <span class="ax-label">Speed</span>
-            <span class="ax-score good">95</span>
-            <span class="chev" id="chev-uc-pte-hello-world-note-static-speed">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-uc-pte-hello-world-note-static-speed">Static-file copy: compile finished in ~6 seconds (compile.log 20:32:19→20:32:25). Effectively instant deployment with no agent turns.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-static-error-recovery')">
-            <span class="ax-label">Error recovery</span>
-            <span class="ax-score good">80</span>
-            <span class="chev" id="chev-uc-pte-hello-world-note-static-error-recovery">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-uc-pte-hello-world-note-static-error-recovery">N/A in practice — static submission with zero failed tool calls (`is_error:true` count = 0) and clean compile/publish. No errors to recover from; default to mid-high.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-static-autonomy')">
-            <span class="ax-label">Autonomy</span>
+          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-static-code-quality')">
+            <span class="ax-label">code_quality</span>
             <span class="ax-score ok">70</span>
-            <span class="chev" id="chev-uc-pte-hello-world-note-static-autonomy">&#9654;</span>
+            <span class="chev" id="chev-uc-pte-hello-world-note-static-code-quality">&#9654;</span>
           </div>
-          <div class="ax-text" id="body-uc-pte-hello-world-note-static-autonomy">Not a true autonomous agent run — static.py simply copied pre-written .al files into the workspace (agent.log: `{&quot;type&quot;: &quot;static_submission&quot;}`). No human intervention during the run, but no autonomous problem-solving either.</div>
+          <div class="ax-text" id="body-uc-pte-hello-world-note-static-code-quality">AL is clean, idiomatic, uses Rec. qualifier (NoImplicitWith), and properties Caption/ToolTip/ApplicationArea/DataClassification are all set (CustomerCardExt.al:9-13). However: tableextension ID is 50000 instead of spec&#x27;s 50100 (CustomerExt.al:1); the field&#x27;s table-level Caption is &#x27;PTE Hello World Note&#x27; rather than &#x27;Hello World Note&#x27; (CustomerExt.al:7) — fine on the page but inconsistent. Additional files (HelloWorld.al codeunit, CustomerListExt.al, PTEHelloWorld.Permissionset.al) clutter the project. ID 50001 for the Customer List extension is out-of-pattern with the 50100/50110 series the spec proposed.</div>
+        </div>
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-static-spec-understanding')">
+            <span class="ax-label">spec_understanding</span>
+            <span class="ax-score ok">60</span>
+            <span class="chev" id="chev-uc-pte-hello-world-note-static-spec-understanding">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-uc-pte-hello-world-note-static-spec-understanding">All acceptance criteria (1 custom field on Customer table, Text[100], visible on Customer Card, blank allowed, &lt;3-char error) are implemented. But significant scope creep: agent added a &#x27;PTE Hello World&#x27; codeunit, a Customer List pageextension with &#x27;Say Hello&#x27; action, the same action on Customer Card, and a permissionset — none of which the spec asked for. Section 17 of the spec explicitly says permission sets are out of scope. The agent seems to have conflated this minimal extension with a generic &#x27;Hello World&#x27; demo. The comments inside files reference fictitious TS-IDs (e.g. &#x27;TS-10: Permission set...&#x27;) that do not match the actual TS-01..TS-15 in the spec, indicating the agent invented its own test mapping.</div>
         </div>
     </div>
         </div>
