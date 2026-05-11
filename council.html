@@ -1,0 +1,1821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BS-Bench evaluation report</title>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --card: #ffffff;
+    --ink: #1c1917;
+    --muted: #78716c;
+    --border: #e7e5e4;
+    --good: #15803d;
+    --good-bg: #dcfce7;
+    --ok: #b45309;
+    --ok-bg: #fef3c7;
+    --warn: #b91c1c;
+    --warn-bg: #fee2e2;
+    --surface2: #f5f5f4;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    margin: 0;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 980px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* ── Header ── */
+  header { margin-bottom: 24px; }
+  h1 { margin: 0 0 6px; font-size: 28px; letter-spacing: -0.01em; font-weight: 700; }
+  .subtitle { color: var(--muted); font-size: 15px; margin-bottom: 0; }
+
+  /* ── Intro card ── */
+  .intro-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: #44403c;
+  }
+
+  /* ── Top nav tabs ── */
+  .top-nav {
+    display: flex;
+    gap: 0;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  .top-nav button {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    padding: 10px 20px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .top-nav button:hover { color: var(--ink); }
+  .top-nav button.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
+
+  /* ── Section visibility ── */
+  .section { display: none; }
+  .section.active { display: block; }
+  .section-intro { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+
+  /* ── Cards ── */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 28px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    text-align: center;
+  }
+  .card .agent { font-size: 15px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+  .card .score { font-size: 38px; font-weight: 700; letter-spacing: -0.02em; }
+  .card .meta  { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .good { color: var(--good); }
+  .ok   { color: var(--ok); }
+  .warn { color: var(--warn); }
+
+  /* ── Tables ── */
+  h2 { font-size: 18px; font-weight: 600; margin: 0 0 12px; letter-spacing: -0.01em; }
+  .inner-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 14px; }
+  th { background: #f5f5f4; font-weight: 600; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  tr:last-child td { border-bottom: none; }
+  .score-cell { text-align: center; font-weight: 700; font-size: 15px; }
+  .axis-name { width: 36%; }
+  .axis-title { font-weight: 600; font-size: 14px; }
+  .axis-blurb { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .axis-title-sm { font-weight: 600; font-size: 14px; color: var(--ink); }
+  code { background: #f5f5f4; padding: 1px 6px; border-radius: 4px; font-size: 12px;
+          font-family: ui-monospace,"SF Mono",Menlo,Consolas,monospace; }
+
+  /* ── Status pill ── */
+  .status-pill { display: inline-block; background: var(--warn-bg); color: var(--warn);
+                  font-size: 12px; font-weight: 600; padding: 3px 10px;
+                  border-radius: 999px; letter-spacing: 0.02em; }
+
+  /* ── Drill: table rows ── */
+  .drill-tr { cursor: pointer; user-select: none; }
+  .drill-tr:hover td { background: #f5f5f4; }
+  .chev { font-size: 11px; color: var(--muted); transition: transform 0.2s; display: inline-block; }
+  .chev.open { transform: rotate(90deg); }
+  .chev-cell { text-align: right; width: 28px; }
+  .drill-body-tr { display: none; }
+  .drill-body-tr.open { display: table-row; }
+  .drill-body-tr td { background: #fdfcfb; padding: 12px 16px 14px; }
+  .reasoning-box { font-size: 14px; color: #44403c; line-height: 1.6; }
+
+  /* ── Drill: axis reasoning ── */
+  .ax-reasoning { padding: 10px 0; border-bottom: 1px dashed var(--border); }
+  .ax-reasoning:last-child { border-bottom: none; }
+  .ax-line { display: flex; align-items: baseline; gap: 10px; cursor: pointer; padding: 2px 0; }
+  .ax-label { font-weight: 600; flex: 1; font-size: 14px; }
+  .ax-score { font-weight: 700; font-size: 18px; }
+  .ax-text { font-size: 14px; color: #44403c; margin-top: 6px; line-height: 1.6;
+              display: none; padding: 10px 14px; background: #fdfcfb;
+              border-radius: 6px; border: 1px solid var(--border); }
+  .ax-text.open { display: block; }
+
+  /* ── Agent section ── */
+  .agent-section { background: var(--card); border: 1px solid var(--border);
+                    border-radius: 10px; padding: 20px 24px; margin-top: 14px; }
+  .agent-summary { display: flex; align-items: center; gap: 24px;
+                    padding-bottom: 14px; border-bottom: 1px solid var(--border);
+                    margin-bottom: 14px; flex-wrap: wrap; }
+  .agent-score { font-size: 44px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+  .agent-score-label { display: block; font-size: 11px; color: var(--muted);
+                        text-transform: uppercase; letter-spacing: 0.08em;
+                        font-weight: 500; margin-top: 4px; }
+
+  /* ── Failure box ── */
+  .failure-box { background: var(--warn-bg); border-left: 3px solid var(--warn);
+                  border-radius: 6px; padding: 14px 16px; margin-top: 8px; }
+  .failure-title { font-weight: 600; color: var(--warn); margin-bottom: 8px; }
+  .failure-detail { font-family: ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+                     font-size: 12px; background: var(--card); padding: 8px 10px;
+                     border-radius: 4px; white-space: pre-wrap; word-break: break-word;
+                     color: #44403c; margin-bottom: 0; }
+
+  /* ── Generic accordion ── */
+  .accordion-block { background: var(--card); border: 1px solid var(--border);
+                      border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+  .accordion-header { display: flex; align-items: flex-start; justify-content: space-between;
+                       padding: 16px 20px; cursor: pointer; gap: 16px; user-select: none; }
+  .accordion-header:hover { background: #f5f5f4; }
+  .accordion-title { font-weight: 600; font-size: 15px; margin-bottom: 2px; }
+  .accordion-sub { font-size: 13px; color: var(--muted); }
+  .accordion-body { display: none; padding: 20px; border-top: 1px solid var(--border); }
+  .accordion-body.open { display: block; }
+
+  /* ── Week badge ── */
+  .week-badge { background: var(--ink); color: #fff; font-size: 11px; font-weight: 700;
+                 padding: 3px 9px; border-radius: 999px; letter-spacing: 0.05em;
+                 flex-shrink: 0; white-space: nowrap; }
+
+  /* ── Use-case tabs ── */
+  .uc-tab-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+  .uc-tab { background: var(--card); border: 1px solid var(--border); border-radius: 6px;
+             padding: 6px 14px; font-family: inherit; font-size: 13px; font-weight: 500;
+             cursor: pointer; color: var(--muted); transition: all 0.15s; }
+  .uc-tab:hover { color: var(--ink); border-color: var(--ink); }
+  .uc-tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .uc-panel { display: none; }
+  .uc-panel.active { display: block; }
+
+  /* ── Task spec ── */
+  .task-spec-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+                      color: var(--muted); margin-bottom: 8px; }
+  .task-spec { background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+                padding: 14px 18px; margin-bottom: 24px; font-size: 14px;
+                white-space: pre-wrap; color: #44403c; max-height: 200px; overflow-y: auto; }
+
+  /* ── Council: run card ── */
+  .council-run-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .council-run-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+  }
+  .council-run-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .run-badge {
+    font-size: 11px; font-family: ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    background: #f5f5f4; border: 1px solid var(--border);
+    padding: 3px 10px; border-radius: 6px; color: var(--muted);
+  }
+  .task-badge {
+    font-size: 11px;
+    background: #eff6ff; border: 1px solid #bfdbfe;
+    color: #1d4ed8; padding: 3px 10px; border-radius: 6px;
+  }
+  .council-badge {
+    font-size: 11px;
+    background: #faf5ff; border: 1px solid #e9d5ff;
+    color: #7c3aed; padding: 3px 10px; border-radius: 6px; font-weight: 600;
+  }
+  .council-score-block { display: flex; align-items: baseline; gap: 10px; }
+  .council-final-score {
+    font-size: 48px; font-weight: 700; letter-spacing: -0.03em; line-height: 1;
+  }
+  .council-score-label { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+  /* ── Council: range bar ── */
+  .range-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .range-track {
+    position: relative; width: 80px; height: 6px;
+    background: #f5f5f4; border-radius: 3px; border: 1px solid var(--border);
+  }
+  .range-fill {
+    position: absolute; top: 0; height: 100%;
+    background: rgba(29, 78, 216, 0.2); border-radius: 3px;
+  }
+  .range-mean {
+    position: absolute; top: -3px; width: 3px; height: 12px;
+    background: #1d4ed8; border-radius: 2px;
+  }
+  .range-label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+  /* ── Council: confidence badge ── */
+  .conf-badge {
+    font-size: 11px; font-weight: 600; padding: 2px 8px;
+    border-radius: 999px; display: inline-block;
+  }
+  .conf-badge.stable {
+    background: var(--good-bg); color: var(--good);
+    border: 1px solid #86efac;
+  }
+  .conf-badge.uncertain {
+    background: var(--ok-bg); color: var(--ok);
+    border: 1px solid #fcd34d;
+  }
+
+  /* ── Council: member grid ── */
+  .member-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px; margin-bottom: 8px;
+  }
+  .member-card {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px; overflow: hidden;
+  }
+  .member-failed { opacity: 0.6; }
+  .member-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding-left: 10px; margin-bottom: 8px;
+  }
+  .member-label { font-weight: 600; font-size: 13px; color: var(--ink); }
+  .member-model { font-size: 11px; font-family: ui-monospace,"SF Mono",Menlo,Consolas,monospace; margin-top: 2px; }
+  .member-score { font-size: 22px; font-weight: 700; white-space: nowrap; }
+  .member-meta {
+    display: flex; gap: 12px; font-size: 11px;
+    color: var(--muted); margin-bottom: 10px;
+  }
+
+  /* ── Council: mini axis bars ── */
+  .mini-axes { display: flex; flex-direction: column; gap: 5px; }
+  .mini-axis { display: flex; align-items: center; gap: 6px; }
+  .mini-axis-label {
+    font-size: 10px; color: var(--muted); width: 72px;
+    flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .mini-bar-track {
+    flex: 1; height: 5px; background: var(--border);
+    border-radius: 3px; overflow: hidden;
+  }
+  .mini-bar-fill {
+    height: 100%; border-radius: 3px;
+    background: var(--muted);
+  }
+  .mini-bar-fill.good { background: var(--good); }
+  .mini-bar-fill.ok   { background: var(--ok); }
+  .mini-bar-fill.warn { background: var(--warn); }
+  .mini-axis-score { font-size: 10px; font-weight: 700; width: 22px; text-align: right; }
+
+  /* ── Council: per-axis reasoning ── */
+  .reasoning-axis-block {
+    background: #fdfcfb; border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px; margin-bottom: 10px;
+  }
+  .reasoning-axis-title {
+    font-weight: 700; font-size: 13px; color: var(--ink);
+    margin-bottom: 10px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .reasoning-entry {
+    margin-bottom: 10px; padding-bottom: 10px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .reasoning-entry:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .reasoning-entry-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .re-label { font-size: 12px; font-weight: 600; font-family: ui-monospace,"SF Mono",Menlo,Consolas,monospace; }
+  .re-score { font-size: 16px; font-weight: 700; }
+  .re-text { font-size: 12px; color: #44403c; line-height: 1.5; }
+
+  /* ── Council: empty state ── */
+  .empty-state { text-align: center; padding: 60px 20px; }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-title { font-size: 18px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+  .empty-sub { color: var(--muted); font-size: 14px; }
+
+  footer { margin-top: 40px; font-size: 12px; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>Coding-agent evaluation report</h1>
+    <div class="subtitle">Microsoft Dynamics 365 Business Central &middot; AL extension task &middot; 2 agents compared &middot; 1 week &middot; 🏛️ 2 council runs</div>
+  </header>
+
+  <div class="intro-card">
+    Each agent received the same task spec and an empty Business Central AL workspace. After the agent finished, the produced extension was compiled, published to a real BC sandbox, and evaluated across six weighted axes. Behavior was verified at runtime &mdash; the evaluator opened the BC web client, exercised the new functionality, and read state via OData.
+     🏛️ Council runs aggregate scores from multiple grader models for higher confidence.
+  </div>
+
+  <nav class="top-nav">
+    <button class="active" onclick="showSection('overall', this)">Overall</button>
+    <button onclick="showSection('metrics', this)">Metrics</button>
+    <button onclick="showSection('weekly', this)">Weekly</button>
+    <button onclick="showSection('usecase', this)">Use-cases</button>
+    <button onclick="showSection('council', this)">🏛️ Council</button>
+  </nav>
+
+  
+    <section id="sec-overall" class="section active">
+      <div class="cards">
+        <div class="card">
+          <div class="agent">Claude Code</div>
+          <div class="score good">96.5</div>
+          <div class="meta">🥇 avg across all use-cases</div>
+        </div>
+        <div class="card">
+          <div class="agent">Darts</div>
+          <div class="score ok">71.2</div>
+          <div class="meta">🥈 avg across all use-cases</div>
+        </div></div>
+      <h2>Score breakdown by use-case</h2>
+      <p style="font-size:13px;color:var(--muted);margin:-8px 0 12px">🏛️ = graded by council</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Agent</th><th>pte-hello-world-note</th><th>Overall avg</th></tr></thead>
+          <tbody><tr>
+          <td><strong>Claude Code</strong></td>
+          <td class="score-cell good">96.5 🏛️</td>
+          <td class="score-cell good"><strong>96.5</strong></td>
+        </tr><tr>
+          <td><strong>Darts</strong></td>
+          <td class="score-cell ok">71.2 🏛️</td>
+          <td class="score-cell ok"><strong>71.2</strong></td>
+        </tr></tbody>
+        </table>
+      </div>
+    </section>
+  
+    <section id="sec-metrics" class="section">
+      <p class="section-intro">Click a metric to expand rankings and week-by-week trend.</p>
+      
+        <div class="accordion-block">
+          <div class="accordion-header" onclick="toggleAccordion('functional-correctness')">
+            <div>
+              <div class="accordion-title">functional_correctness</div>
+              <div class="accordion-sub"></div>
+            </div>
+            <span class="chev" id="achev-functional-correctness">&#9654;</span>
+          </div>
+          <div class="accordion-body" id="abody-functional-correctness">
+            <div class="inner-label">Rankings</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th></th><th>Agent</th><th>Score</th><th>Use-case</th><th>Week</th><th></th></tr></thead>
+                <tbody>
+            <tr class="drill-tr" onclick="toggleDrill('ax-functional-correctness-claude-code')">
+              <td>🥇</td>
+              <td><strong>Claude Code</strong></td>
+              <td class="score-cell good">97</td>
+              <td><code>pte-hello-world-note</code></td>
+              <td>W1</td>
+              <td class="chev-cell"><span class="chev" id="chev-ax-functional-correctness-claude-code">&#9654;</span></td>
+            </tr>
+            <tr class="drill-body-tr" id="body-ax-functional-correctness-claude-code">
+              <td colspan="6"><div class="reasoning-box">[Council mean=97; representative from Sonnet 4.6] All spec&#x27;d behaviors verified at runtime: the &#x27;Hello World Note&#x27; field renders in the General FastTab on Customer Card (ARIA ref f1e246), entering &#x27;Hi&#x27; (2 chars) triggered the exact validation error &#x27;Hello World Note must contain at least 3 characters&#x27; (paragraph ref f1e709) with &#x27;Not saved&#x27; status, entering &#x27;ABC&#x27; (3 chars) saved successfully, and the field was initially blank and accepted. Zero compilation errors. Minor deduction for not explicitly re-opening the record to confirm persistence, though the &#x27;Saved&#x27; status confirms the write succeeded.</div></td>
+            </tr>
+            <tr class="drill-tr" onclick="toggleDrill('ax-functional-correctness-static')">
+              <td>🥈</td>
+              <td><strong>Darts</strong></td>
+              <td class="score-cell good">84</td>
+              <td><code>pte-hello-world-note</code></td>
+              <td>W1</td>
+              <td class="chev-cell"><span class="chev" id="chev-ax-functional-correctness-static">&#9654;</span></td>
+            </tr>
+            <tr class="drill-body-tr" id="body-ax-functional-correctness-static">
+              <td colspan="6"><div class="reasoning-box">[Council mean=84; representative from Opus 4.6] All core acceptance criteria are met: the &#x27;Hello World Note&#x27; field renders in the General FastTab on Customer Card, blank values are accepted without error, values under 3 characters trigger the validation error, and values of 3+ characters save successfully (verified via Playwright on customer 10000). Minor deduction: the optional Message() popup fires on every valid save (&#x27;Hello World Note updated successfully for customer: Adatum Corporation&#x27;), which the spec explicitly recommends omitting for production to avoid intrusive popups.</div></td>
+            </tr></tbody>
+              </table>
+            </div>
+            <div class="inner-label" style="margin-top:20px">Week-by-week trend</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Agent</th><th>W1: May 08 – May 14, 2026</th></tr></thead>
+                <tbody><tr><td><strong>Claude Code</strong></td><td class="score-cell good">97</td></tr><tr><td><strong>Darts</strong></td><td class="score-cell good">84</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-block">
+          <div class="accordion-header" onclick="toggleAccordion('code-quality')">
+            <div>
+              <div class="accordion-title">code_quality</div>
+              <div class="accordion-sub"></div>
+            </div>
+            <span class="chev" id="achev-code-quality">&#9654;</span>
+          </div>
+          <div class="accordion-body" id="abody-code-quality">
+            <div class="inner-label">Rankings</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th></th><th>Agent</th><th>Score</th><th>Use-case</th><th>Week</th><th></th></tr></thead>
+                <tbody>
+            <tr class="drill-tr" onclick="toggleDrill('ax-code-quality-claude-code')">
+              <td>🥇</td>
+              <td><strong>Claude Code</strong></td>
+              <td class="score-cell good">95</td>
+              <td><code>pte-hello-world-note</code></td>
+              <td>W1</td>
+              <td class="chev-cell"><span class="chev" id="chev-ax-code-quality-claude-code">&#9654;</span></td>
+            </tr>
+            <tr class="drill-body-tr" id="body-ax-code-quality-claude-code">
+              <td colspan="6"><div class="reasoning-box">[Council mean=95; representative from Sonnet 4.6] Both files follow idiomatic AL: correct extension object types (tableextension 50100, pageextension 50110), PTE prefix on all objects and fields, IDs within the 50000–99999 range, DataClassification = CustomerContent on the field, Caption and ToolTip on the page field, ApplicationArea = All, and addlast(General) for proper placement. app.json has NoImplicitWith enabled and runtime 16.0. File names are descriptive (PTECustomerExt.TableExt.al, PTECustomerCardExt.PageExt.al). The only trivial point is the page-field control identifier &#x27;PTEHelloWorldNote&#x27; omits spaces, which is acceptable but slightly inconsistent with the field name style.</div></td>
+            </tr>
+            <tr class="drill-tr" onclick="toggleDrill('ax-code-quality-static')">
+              <td>🥈</td>
+              <td><strong>Darts</strong></td>
+              <td class="score-cell ok">66</td>
+              <td><code>pte-hello-world-note</code></td>
+              <td>W1</td>
+              <td class="chev-cell"><span class="chev" id="chev-ax-code-quality-static">&#9654;</span></td>
+            </tr>
+            <tr class="drill-body-tr" id="body-ax-code-quality-static">
+              <td colspan="6"><div class="reasoning-box">[Council mean=66; representative from Sonnet 4.6] Strengths: correct NoImplicitWith/Rec. prefix usage, DataClassification = CustomerContent, ApplicationArea = All, ToolTip present, GuiAllowed guard on the Message() call. Weaknesses: the tableextension field Caption is &#x27;PTE Hello World Note&#x27; instead of the spec&#x27;s &#x27;Hello World Note&#x27; (the pageextension overrides it at runtime, masking the issue); all AL files are cluttered with excessive inline comments referencing test IDs (TS-01 through TS-09) that belong in external documents, not source code; tableextension and codeunit both use object ID 50000 (AL allows cross-type ID reuse, but it&#x27;s an unnecessary naming collision).</div></td>
+            </tr></tbody>
+              </table>
+            </div>
+            <div class="inner-label" style="margin-top:20px">Week-by-week trend</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Agent</th><th>W1: May 08 – May 14, 2026</th></tr></thead>
+                <tbody><tr><td><strong>Claude Code</strong></td><td class="score-cell good">95</td></tr><tr><td><strong>Darts</strong></td><td class="score-cell ok">66</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-block">
+          <div class="accordion-header" onclick="toggleAccordion('spec-understanding')">
+            <div>
+              <div class="accordion-title">spec_understanding</div>
+              <div class="accordion-sub"></div>
+            </div>
+            <span class="chev" id="achev-spec-understanding">&#9654;</span>
+          </div>
+          <div class="accordion-body" id="abody-spec-understanding">
+            <div class="inner-label">Rankings</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th></th><th>Agent</th><th>Score</th><th>Use-case</th><th>Week</th><th></th></tr></thead>
+                <tbody>
+            <tr class="drill-tr" onclick="toggleDrill('ax-spec-understanding-claude-code')">
+              <td>🥇</td>
+              <td><strong>Claude Code</strong></td>
+              <td class="score-cell good">98</td>
+              <td><code>pte-hello-world-note</code></td>
+              <td>W1</td>
+              <td class="chev-cell"><span class="chev" id="chev-ax-spec-understanding-claude-code">&#9654;</span></td>
+            </tr>
+            <tr class="drill-body-tr" id="body-ax-spec-understanding-claude-code">
+              <td colspan="6"><div class="reasoning-box">[Council mean=98; representative from Sonnet 4.6] Agent implemented every acceptance criterion precisely: only tableextension + pageextension objects (no base modifications), correct field name &#x27;PTE Hello World Note&#x27; as Text[100] with ID 50100, addlast(General) placement on Customer Card, blank-exits-early + StrLen&lt;3 Error pattern exactly matching the spec&#x27;s code design, and consistent PTE prefix/ID range. Exactly 2 files and 2 objects — zero scope creep. The implementation mirrors the spec&#x27;s reference code almost verbatim, demonstrating thorough understanding of the requirement.</div></td>
+            </tr>
+            <tr class="drill-tr" onclick="toggleDrill('ax-spec-understanding-static')">
+              <td>🥈</td>
+              <td><strong>Darts</strong></td>
+              <td class="score-cell warn">58</td>
+              <td><code>pte-hello-world-note</code></td>
+              <td>W1</td>
+              <td class="chev-cell"><span class="chev" id="chev-ax-spec-understanding-static">&#9654;</span></td>
+            </tr>
+            <tr class="drill-body-tr" id="body-ax-spec-understanding-static">
+              <td colspan="6"><div class="reasoning-box">[Council mean=58; representative from Sonnet 4.6] All five explicit acceptance criteria are implemented (extension-only objects, Customer table extended with the field, field on Customer Card, ≥3-char validation, clean compile). However, three files are entirely out of spec scope: CustomerListExt.al (adds a &#x27;Say Hello&#x27; action to Customer List), HelloWorld.al (a codeunit that just shows &#x27;Hello World&#x27;), and PTEHelloWorld.Permissionset.al — Section 17 of the spec explicitly excludes permission set configurations. The invented &#x27;Say Hello&#x27; action and Hello World codeunit indicate the agent treated the spec&#x27;s title as a creative prompt rather than a strict requirements document.</div></td>
+            </tr></tbody>
+              </table>
+            </div>
+            <div class="inner-label" style="margin-top:20px">Week-by-week trend</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Agent</th><th>W1: May 08 – May 14, 2026</th></tr></thead>
+                <tbody><tr><td><strong>Claude Code</strong></td><td class="score-cell good">98</td></tr><tr><td><strong>Darts</strong></td><td class="score-cell warn">58</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+    </section>
+  <section id="sec-weekly" class="section">
+        <div class="accordion-block">
+          <div class="accordion-header" onclick="toggleAccordion('wk-2026-05-08')">
+            <div style="display:flex;align-items:center;gap:12px">
+              <span class="week-badge">W1</span>
+              <div class="accordion-title">May 08 – May 14, 2026</div>
+            </div>
+            <span class="chev open" id="achev-wk-2026-05-08">&#9654;</span>
+          </div>
+          <div class="accordion-body open" id="abody-wk-2026-05-08">
+            
+            <div class="task-spec-label">Task spec</div><div class="task-spec">Technical Requirement Document â€” Minimal &quot;Hello World&quot; Extension for Microsoft Dynamics 365 Business Central
+
+Document Purpose: Define requirements for a minimal AL extension for Business Central
+Version: 1.0
+Date: 2026-05-02
+Intended Audience: AL Developer, Tester, Business Reviewer
+
+
+2. Brief Explanation / Overview
+
+This requirement defines a minimal per-tenant AL extension that extends the standard Customer table, adds one custom field, shows it on the Customer Card, and includes a small validation rule to demonstrate core Business Central extensibility. The solution must be delivered only through extension objects and must not directly modify Microsoft base objects. The design follows Microsoft&#x27;s extension model utilizing tableextension and pageextension objects.
+
+
+3. Objective
+
+To provide a developer-ready specification for a simple, non-intrusive extension that safely modifies the Dynamics 365 Business Central user interface and data schema while adhering to modern AL development best practices.
+
+
+4. Scope
+
+The scope encompasses the creation of an AL extension containing a new custom field on the Customer table, exposure of this field on the Customer Card page, and implementation of basic validation logic ensuring minimum character length.
+
+
+5. Functional Scope
+
+| Item                       | Requirement                                              |
+|----------------------------|----------------------------------------------------------|
+| Standard entity to extend  | Customer                                                 |
+| New field                  | PTE Hello World Note                                     |
+| Field type                 | Text[100]                                                |
+| UI exposure                | Add field to Customer Card via page extension            |
+| Business logic             | Validate non-blank value must be at least 3 characters   |
+| Constraint                 | No direct modification of base objects                   |
+
+
+6. Developer Notes
+
+For a minimal, realistic per-tenant sample, this document utilizes a &quot;PTE&quot; prefix and object IDs within the 50000â€“99999 range. This range is structurally suitable for per-tenant customizations and isolated scenarios as per Microsoft&#x27;s upgrade-safe extension model. Note: If this extension is intended for Microsoft AppSource in the future, the PTE prefix must be replaced with a registered 3-character affix, and the object ID range must match the assigned app object range.
+
+
+7. Assumptions and Dependencies
+
+- The target environment is Dynamics 365 Business Central (cloud or on-premises running a recent runtime).
+- The developer has access to an AL development environment (Visual Studio Code with the AL Language extension).
+- The tester has access to a Sandbox/UAT environment for installation and validation of the extension.
+
+
+8. AL Code Design
+
+TableExtension Design
+
+The solution uses a tableextension to add the new field to the Customer table and to host the validation trigger.
+
+tableextension 50100 &quot;PTE Customer Ext&quot; extends Customer
+{
+    fields
+    {
+        field(50100; &quot;PTE Hello World Note&quot;; Text[100])
+        {
+            Caption = &#x27;Hello World Note&#x27;;
+            DataClassification = CustomerContent;
+
+            trigger OnValidate()
+            begin
+                if &quot;PTE Hello World Note&quot; = &#x27;&#x27; then
+                    exit;
+
+                if StrLen(&quot;PTE Hello World Note&quot;) &lt; 3 then
+                    Error(&#x27;Hello World Note must contain at least 3 characters&#x27;);
+            end;
+        }
+    }
+}
+
+PageExtension Design
+
+The solution requires a pageextension to display the field cleanly at the end of the General FastTab on the Customer Card.
+
+pageextension 50110 &quot;PTE Customer Card Ext&quot; extends &quot;Customer Card&quot;
+{
+    layout
+    {
+        addlast(General)
+        {
+            field(&quot;PTEHelloWorldNote&quot;; Rec.&quot;PTE Hello World Note&quot;)
+            {
+                ApplicationArea = All;
+                Caption = &#x27;Hello World Note&#x27;;
+                ToolTip = &#x27;Specifies a short demo note used to demonstrate Business Central extensibility.&#x27;;
+            }
+        }
+    }
+}
+
+Optional Business Logic Variant
+
+If testing interaction is desired, the trigger can be extended with a notification message:
+
+trigger OnValidate() begin
+    if Rec.&quot;PTE Hello World Note&quot; = &#x27;&#x27; then
+        exit;
+
+    if StrLen(Rec.&quot;PTE Hello World Note&quot;) &lt; 3 then
+        Error(&#x27;Hello World Note must contain at least 3 characters&#x27;);
+
+    Message(&#x27;Hello %1. The note has been updated.&#x27;, Rec.Name);
+end;
+
+Recommendation: The Message popup is optional demo behavior only. For production-oriented implementations, keep only the Error(...) validation to prevent intrusive popups during high-volume data entry.
+
+
+9. Requirement Mapping
+
+The tableextension object satisfies the requirement to extend the standard Customer table, adds exactly one custom field, and places the business validation rule in the table layer. This guarantees validation applies consistently regardless of the entry point (UI, API, or codeflow). The pageextension exposes the custom field on the Customer Card within the existing General fast tab, satisfying UI exposure without altering the base page directly.
+
+
+10. Naming Conventions and Object ID Strategy
+
+All customized standard objects and newly created fields must adhere to the configured prefix (PTE). Identifiers must be kept within the 50000â€“99999 tenant customization range to ensure isolation and upgrade-safe alignment with AL extension best practices.
+
+
+11. Deployment Notes
+
+The extension must be packaged as an .app file. Initial deployment will target a Sandbox environment to conduct User Acceptance Testing (UAT). Following UAT sign-off, the compiled extension can be uploaded directly to the Production tenant via the Extension Management page.
+
+
+12. Build and Validation Expectations
+
+The AL codebase must compile cleanly without warnings or runtime errors. Base objects must not show any direct modifications. Validation logic must fire accurately for UI-driven inserts/updates.
+
+
+13. Acceptance Criteria
+
+- A new AL extension is created without changing any base Microsoft object directly.
+- The Customer table is extended with one custom field named PTE Hello World Note.
+- The field is visible on the Customer Card page.
+- Entering a non-blank value shorter than 3 characters raises an error.
+- The code compiles cleanly and uses consistent naming and object IDs.
+
+
+14. Test Scenarios and UAT Acceptance Criteria
+
+| ID    | Test Type        | Scenario                                            | Pre-Conditions                                              | Test Steps                                                                                                                              | Expected Result                                                          | UAT Acceptance Criteria                                                                                  |
+|-------|------------------|-----------------------------------------------------|-------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| TS-01 | Functional       | Verify extension installs successfully              | Extension package is published to sandbox/UAT environment   | 1. Install/publish the extension. 2. Open Business Central. 3. Search for Customer Card.                                                | Extension installs without compilation/runtime errors                    | Business user can access Customer Card after deployment with no disruption to standard functionality     |
+| TS-02 | Functional       | Verify custom field is added to Customer table and shown on UI | Extension installed                                | 1. Open an existing customer card. 2. Review the General section.                                                                       | Field Hello World Note is visible on the Customer Card                   | User confirms the field is visible in the agreed location and label is understandable                    |
+| TS-03 | Functional       | Verify blank value is allowed                       | Customer Card is open                                       | 1. Clear the field value. 2. Save/close the customer card.                                                                              | Record saves successfully with blank field value                         | User confirms blank is acceptable if no note is entered                                                   |
+| TS-04 | Functional       | Verify valid value can be entered                   | Customer Card is open                                       | 1. Enter a valid value such as Test. 2. Save the record.                                                                                | Record saves successfully                                                | User confirms normal data entry works without unexpected messages/errors                                  |
+| TS-05 | Negative         | Validate minimum length rule                        | Customer Card is open                                       | 1. Enter Hi or any value shorter than 3 characters. 2. Move off the field or save the record.                                          | System raises validation error and value is not accepted                 | User confirms invalid short entries are blocked consistently                                              |
+| TS-06 | Functional       | Verify exactly 3 characters are accepted            | Customer Card is open                                       | 1. Enter ABC. 2. Save the record.                                                                                                       | Record saves successfully                                                | User confirms the minimum rule works exactly as specified, not more restrictive than required             |
+| TS-07 | Functional       | Verify data persists after reopen                   | Customer has a valid note saved                             | 1. Save record. 2. Close Customer Card. 3. Reopen the same customer.                                                                    | Saved value remains in Hello World Note                                  | User confirms value is stored correctly and remains visible after reopening                               |
+| TS-08 | Functional       | Verify new customer entry supports the field        | Extension installed                                         | 1. Create a new customer. 2. Enter standard mandatory fields. 3. Enter valid Hello World Note. 4. Save.                                 | New customer is created successfully with the custom field value         | User confirms the field works for both new and existing customers                                         |
+| TS-09 | Regression       | Verify standard customer fields are unaffected      | Extension installed                                         | 1. Edit standard fields such as Name, Address, Phone No. 2. Save record.                                                                | Standard fields continue to behave as before                             | User confirms no regression in standard Customer Card behavior                                            |
+| TS-10 | Regression       | Verify page loads normally when custom field is unused | Extension installed                                      | 1. Open multiple customer cards that have blank note values.                                                                            | Customer Card opens normally with no errors or forced input              | User confirms the extension does not make the process slower or more complicated                          |
+| TS-11 | UX / Optional Logic | Verify optional message trigger behavior, if implemented | Optional Message(...) logic is enabled                | 1. Enter a valid note. 2. Validate/save record.                                                                                          | Informational message displays once as designed                          | User confirms the message is acceptable for demo/UAT purposes, or requests its removal for production     |
+| TS-12 | Data Quality     | Verify long but valid text within field size        | Customer Card is open                                       | 1. Enter a long value up to defined field length. 2. Save.                                                                              | Record saves successfully within field size limit                        | User confirms expected business note size is sufficient                                                   |
+| TS-13 | Permission / Access | Verify users with normal customer maintenance access can use the field | Test user has standard customer edit permissions | 1. Log in as target business user. 2. Open Customer Card. 3. Edit note field.                                                            | User can view/edit the field if they can edit customer records           | User confirms no extra permission setup is required beyond normal customer maintenance                    |
+| TS-14 | Upgrade-Safe Behavior | Verify no direct base object modification is required | Source code is available for review                     | 1. Review extension objects. 2. Confirm use of tableextension and pageextension only.                                                    | No base Microsoft object is modified directly                            | Developer and tester confirm solution aligns with extension best practices                                |
+| TS-15 | Naming / Technical Quality | Verify naming and object IDs follow agreed conventions | Source code is available for review                | 1. Review extension object fields, field names, and IDs. 2. Compare with design standard.                                                | IDs and names follow agreed prefix/range conventions                     | Developer confirms technical implementation matches coding standards before release                      |
+
+
+15. Suggested UAT Sign-Off Checklist
+
+| Area                  | Acceptance Question                                                                                  | Pass/Fail | Comments |
+|-----------------------|------------------------------------------------------------------------------------------------------|-----------|----------|
+| Deployment            | Does the extension deploy without affecting existing customer functionality?                         |           |          |
+| UI                    | Is the Hello World Note field visible in the expected place on Customer Card?                        |           |          |
+| Validation            | Is the field caption understandable to business users?                                               |           |          |
+| Validation            | Does the system block values shorter than 3 characters?                                              |           |          |
+| Flexibility           | Is blank allowed when no note is needed?                                                             |           |          |
+| Persistence           | Does the saved value remain after closing and reopening the record?                                  |           |          |
+| Regression            | Are standard customer fields and processes unaffected?                                               |           |          |
+| Production Readiness  | If a popup message is included, is it acceptable for production use?                                 |           |          |
+| Technical Compliance  | Was the solution delivered only through extension objects, with no base object changes?              |           |          |
+| Final Approval        | Is the extension acceptable for release to production?                                               |           |          |
+
+
+16. Recommended UAT Entry/Exit Criteria
+
+| Stage     | Criteria                                                                                                                              |
+|-----------|---------------------------------------------------------------------------------------------------------------------------------------|
+| UAT Entry | Extension deployed to test/UAT environment, Customer Card accessible, tester has permission to create/edit customers                  |
+| UAT Exit  | All critical and high-priority scenarios passed, no blocking defects remain, business owner signs off on field behavior and placement |
+
+
+17. Out of Scope
+
+Integration with APIs, translation files (XLIFF), permission set configurations, or data migration tasks are out of scope for this minimal demonstration. It acts strictly as an entry-level functional validation component.
+
+
+18. Final Implementation Summary
+
+This technical requirement document provides all details necessary for rapid development and validation of a functional Business Central AL extension. Adhering to the configurations provided ensures an isolated, upgrade-ready deployment that respects standard Microsoft architectures.</div>
+            <div class="cards">
+            <div class="card">
+              <div class="agent">Claude Code</div>
+              <div class="score good">96.5</div>
+              <div class="meta">🥇</div>
+            </div>
+            <div class="card">
+              <div class="agent">Darts</div>
+              <div class="score ok">71.2</div>
+              <div class="meta">🥈</div>
+            </div></div>
+            <h2>Score breakdown</h2>
+            
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Axis</th><th>Claude Code</th><th>Darts</th></tr></thead>
+        <tbody><tr>
+          <td class="axis-name">
+            <div class="axis-title">functional_correctness</div>
+            <div class="axis-blurb"></div>
+          </td><td class="score-cell good">97</td><td class="score-cell good">84</td>
+        </tr><tr>
+          <td class="axis-name">
+            <div class="axis-title">code_quality</div>
+            <div class="axis-blurb"></div>
+          </td><td class="score-cell good">95</td><td class="score-cell ok">66</td>
+        </tr><tr>
+          <td class="axis-name">
+            <div class="axis-title">spec_understanding</div>
+            <div class="axis-blurb"></div>
+          </td><td class="score-cell good">98</td><td class="score-cell warn">58</td>
+        </tr><tr>
+      <td class="axis-name"><div class="axis-title"><strong>Weighted total</strong></div></td>
+      <td class="score-cell good"><strong>96.5</strong></td><td class="score-cell ok"><strong>71.2</strong></td>
+    </tr></tbody>
+      </table>
+    </div>
+            <h2 style="margin-top:20px">Reasoning per agent</h2>
+            
+    <div class="agent-section">
+      <div class="agent-summary">
+        <div class="agent-score good">96.5<span class="agent-score-label">weighted</span></div>
+        <div>
+          <h2 style="margin:0 0 4px">Claude Code</h2>
+          <div style="font-size:13px;color:var(--muted)">2 files produced</div>
+        </div>
+      </div>
+      
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-claude-code-functional-correctness')">
+            <span class="ax-label">functional_correctness</span>
+            <span class="ax-score good">97</span>
+            <span class="chev" id="chev-w0-pte-hello-world-note-claude-code-functional-correctness">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-w0-pte-hello-world-note-claude-code-functional-correctness">[Council mean=97; representative from Sonnet 4.6] All spec&#x27;d behaviors verified at runtime: the &#x27;Hello World Note&#x27; field renders in the General FastTab on Customer Card (ARIA ref f1e246), entering &#x27;Hi&#x27; (2 chars) triggered the exact validation error &#x27;Hello World Note must contain at least 3 characters&#x27; (paragraph ref f1e709) with &#x27;Not saved&#x27; status, entering &#x27;ABC&#x27; (3 chars) saved successfully, and the field was initially blank and accepted. Zero compilation errors. Minor deduction for not explicitly re-opening the record to confirm persistence, though the &#x27;Saved&#x27; status confirms the write succeeded.</div>
+        </div>
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-claude-code-code-quality')">
+            <span class="ax-label">code_quality</span>
+            <span class="ax-score good">95</span>
+            <span class="chev" id="chev-w0-pte-hello-world-note-claude-code-code-quality">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-w0-pte-hello-world-note-claude-code-code-quality">[Council mean=95; representative from Sonnet 4.6] Both files follow idiomatic AL: correct extension object types (tableextension 50100, pageextension 50110), PTE prefix on all objects and fields, IDs within the 50000–99999 range, DataClassification = CustomerContent on the field, Caption and ToolTip on the page field, ApplicationArea = All, and addlast(General) for proper placement. app.json has NoImplicitWith enabled and runtime 16.0. File names are descriptive (PTECustomerExt.TableExt.al, PTECustomerCardExt.PageExt.al). The only trivial point is the page-field control identifier &#x27;PTEHelloWorldNote&#x27; omits spaces, which is acceptable but slightly inconsistent with the field name style.</div>
+        </div>
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-claude-code-spec-understanding')">
+            <span class="ax-label">spec_understanding</span>
+            <span class="ax-score good">98</span>
+            <span class="chev" id="chev-w0-pte-hello-world-note-claude-code-spec-understanding">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-w0-pte-hello-world-note-claude-code-spec-understanding">[Council mean=98; representative from Sonnet 4.6] Agent implemented every acceptance criterion precisely: only tableextension + pageextension objects (no base modifications), correct field name &#x27;PTE Hello World Note&#x27; as Text[100] with ID 50100, addlast(General) placement on Customer Card, blank-exits-early + StrLen&lt;3 Error pattern exactly matching the spec&#x27;s code design, and consistent PTE prefix/ID range. Exactly 2 files and 2 objects — zero scope creep. The implementation mirrors the spec&#x27;s reference code almost verbatim, demonstrating thorough understanding of the requirement.</div>
+        </div>
+    </div>
+    <div class="agent-section">
+      <div class="agent-summary">
+        <div class="agent-score ok">71.2<span class="agent-score-label">weighted</span></div>
+        <div>
+          <h2 style="margin:0 0 4px">Darts</h2>
+          <div style="font-size:13px;color:var(--muted)">5 files produced</div>
+        </div>
+      </div>
+      
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-static-functional-correctness')">
+            <span class="ax-label">functional_correctness</span>
+            <span class="ax-score good">84</span>
+            <span class="chev" id="chev-w0-pte-hello-world-note-static-functional-correctness">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-w0-pte-hello-world-note-static-functional-correctness">[Council mean=84; representative from Opus 4.6] All core acceptance criteria are met: the &#x27;Hello World Note&#x27; field renders in the General FastTab on Customer Card, blank values are accepted without error, values under 3 characters trigger the validation error, and values of 3+ characters save successfully (verified via Playwright on customer 10000). Minor deduction: the optional Message() popup fires on every valid save (&#x27;Hello World Note updated successfully for customer: Adatum Corporation&#x27;), which the spec explicitly recommends omitting for production to avoid intrusive popups.</div>
+        </div>
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-static-code-quality')">
+            <span class="ax-label">code_quality</span>
+            <span class="ax-score ok">66</span>
+            <span class="chev" id="chev-w0-pte-hello-world-note-static-code-quality">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-w0-pte-hello-world-note-static-code-quality">[Council mean=66; representative from Sonnet 4.6] Strengths: correct NoImplicitWith/Rec. prefix usage, DataClassification = CustomerContent, ApplicationArea = All, ToolTip present, GuiAllowed guard on the Message() call. Weaknesses: the tableextension field Caption is &#x27;PTE Hello World Note&#x27; instead of the spec&#x27;s &#x27;Hello World Note&#x27; (the pageextension overrides it at runtime, masking the issue); all AL files are cluttered with excessive inline comments referencing test IDs (TS-01 through TS-09) that belong in external documents, not source code; tableextension and codeunit both use object ID 50000 (AL allows cross-type ID reuse, but it&#x27;s an unnecessary naming collision).</div>
+        </div>
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('w0-pte-hello-world-note-static-spec-understanding')">
+            <span class="ax-label">spec_understanding</span>
+            <span class="ax-score warn">58</span>
+            <span class="chev" id="chev-w0-pte-hello-world-note-static-spec-understanding">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-w0-pte-hello-world-note-static-spec-understanding">[Council mean=58; representative from Sonnet 4.6] All five explicit acceptance criteria are implemented (extension-only objects, Customer table extended with the field, field on Customer Card, ≥3-char validation, clean compile). However, three files are entirely out of spec scope: CustomerListExt.al (adds a &#x27;Say Hello&#x27; action to Customer List), HelloWorld.al (a codeunit that just shows &#x27;Hello World&#x27;), and PTEHelloWorld.Permissionset.al — Section 17 of the spec explicitly excludes permission set configurations. The invented &#x27;Say Hello&#x27; action and Hello World codeunit indicate the agent treated the spec&#x27;s title as a creative prompt rather than a strict requirements document.</div>
+        </div>
+    </div>
+          </div>
+        </div></section>
+  
+    <section id="sec-usecase" class="section">
+      <div class="uc-tab-bar"><button class="uc-tab" id="uct-pte_hello_world_note" onclick="switchUC('pte_hello_world_note')">pte-hello-world-note</button></div>
+      
+        <div class="uc-panel" id="ucp-pte_hello_world_note">
+          <div class="task-spec-label">Task spec</div><div class="task-spec">-------------------------|----------------------------------------------------------|
+| Standard entity to extend  | Customer                                                 |
+| New field                  | PTE Hello World Note                                     |
+| Field type                 | Text[100]                                                |
+| UI exposure                | Add field to Customer Card via page extension            |
+| Business logic             | Validate non-blank value must be at least 3 characters   |
+| Constraint                 | No direct modification of base objects                   |
+
+
+6. Developer Notes
+
+For a minimal, realistic per-tenant sample, this document utilizes a &quot;PTE&quot; prefix and object IDs within the 50000â€“99999 range. This range is structurally suitable for per-tenant customizations and isolated scenarios as per Microsoft&#x27;s upgrade-safe extension model. Note: If this extension is intended for Microsoft AppSource in the future, the PTE prefix must be replaced with a registered 3-character affix, and the object ID range must match the assigned app object range.
+
+
+7. Assumptions and Dependencies
+
+- The target environment is Dynamics 365 Business Central (cloud or on-premises running a recent runtime).
+- The developer has access to an AL development environment (Visual Studio Code with the AL Language extension).
+- The tester has access to a Sandbox/UAT environment for installation and validation of the extension.
+
+
+8. AL Code Design
+
+TableExtension Design
+
+The solution uses a tableextension to add the new field to the Customer table and to host the validation trigger.
+
+tableextension 50100 &quot;PTE Customer Ext&quot; extends Customer
+{
+    fields
+    {
+        field(50100; &quot;PTE Hello World Note&quot;; Text[100])
+        {
+            Caption = &#x27;Hello World Note&#x27;;
+            DataClassification = CustomerContent;
+
+            trigger OnValidate()
+            begin
+                if &quot;PTE Hello World Note&quot; = &#x27;&#x27; then
+                    exit;
+
+                if StrLen(&quot;PTE Hello World Note&quot;) &lt; 3 then
+                    Error(&#x27;Hello World Note must contain at least 3 characters&#x27;);
+            end;
+        }
+    }
+}
+
+PageExtension Design
+
+The solution requires a pageextension to display the field cleanly at the end of the General FastTab on the Customer Card.
+
+pageextension 50110 &quot;PTE Customer Card Ext&quot; extends &quot;Customer Card&quot;
+{
+    layout
+    {
+        addlast(General)
+        {
+            field(&quot;PTEHelloWorldNote&quot;; Rec.&quot;PTE Hello World Note&quot;)
+            {
+                ApplicationArea = All;
+                Caption = &#x27;Hello World Note&#x27;;
+                ToolTip = &#x27;Specifies a short demo note used to demonstrate Business Central extensibility.&#x27;;
+            }
+        }
+    }
+}
+
+Optional Business Logic Variant
+
+If testing interaction is desired, the trigger can be extended with a notification message:
+
+trigger OnValidate() begin
+    if Rec.&quot;PTE Hello World Note&quot; = &#x27;&#x27; then
+        exit;
+
+    if StrLen(Rec.&quot;PTE Hello World Note&quot;) &lt; 3 then
+        Error(&#x27;Hello World Note must contain at least 3 characters&#x27;);
+
+    Message(&#x27;Hello %1. The note has been updated.&#x27;, Rec.Name);
+end;
+
+Recommendation: The Message popup is optional demo behavior only. For production-oriented implementations, keep only the Error(...) validation to prevent intrusive popups during high-volume data entry.
+
+
+9. Requirement Mapping
+
+The tableextension object satisfies the requirement to extend the standard Customer table, adds exactly one custom field, and places the business validation rule in the table layer. This guarantees validation applies consistently regardless of the entry point (UI, API, or codeflow). The pageextension exposes the custom field on the Customer Card within the existing General fast tab, satisfying UI exposure without altering the base page directly.
+
+
+10. Naming Conventions and Object ID Strategy
+
+All customized standard objects and newly created fields must adhere to the configured prefix (PTE). Identifiers must be kept within the 50000â€“99999 tenant customization range to ensure isolation and upgrade-safe alignment with AL extension best practices.
+
+
+11. Deployment Notes
+
+The extension must be packaged as an .app file. Initial deployment will target a Sandbox environment to conduct User Acceptance Testing (UAT). Following UAT sign-off, the compiled extension can be uploaded directly to the Production tenant via the Extension Management page.
+
+
+12. Build and Validation Expectations
+
+The AL codebase must compile cleanly without warnings or runtime errors. Base objects must not show any direct modifications. Validation logic must fire accurately for UI-driven inserts/updates.
+
+
+13. Acceptance Criteria
+
+- A new AL extension is created without changing any base Microsoft object directly.
+- The Customer table is extended with one custom field named PTE Hello World Note.
+- The field is visible on the Customer Card page.
+- Entering a non-blank value shorter than 3 characters raises an error.
+- The code compiles cleanly and uses consistent naming and object IDs.
+
+
+14. Test Scenarios and UAT Acceptance Criteria
+
+| ID    | Test Type        | Scenario                                            | Pre-Conditions                                              | Test Steps                                                                                                                              | Expected Result                                                          | UAT Acceptance Criteria                                                                                  |
+|-------|------------------|-----------------------------------------------------|-------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| TS-01 | Functional       | Verify extension installs successfully              | Extension package is published to sandbox/UAT environment   | 1. Install/publish the extension. 2. Open Business Central. 3. Search for Customer Card.                                                | Extension installs without compilation/runtime errors                    | Business user can access Customer Card after deployment with no disruption to standard functionality     |
+| TS-02 | Functional       | Verify custom field is added to Customer table and shown on UI | Extension installed                                | 1. Open an existing customer card. 2. Review the General section.                                                                       | Field Hello World Note is visible on the Customer Card                   | User confirms the field is visible in the agreed location and label is understandable                    |
+| TS-03 | Functional       | Verify blank value is allowed                       | Customer Card is open                                       | 1. Clear the field value. 2. Save/close the customer card.                                                                              | Record saves successfully with blank field value                         | User confirms blank is acceptable if no note is entered                                                   |
+| TS-04 | Functional       | Verify valid value can be entered                   | Customer Card is open                                       | 1. Enter a valid value such as Test. 2. Save the record.                                                                                | Record saves successfully                                                | User confirms normal data entry works without unexpected messages/errors                                  |
+| TS-05 | Negative         | Validate minimum length rule                        | Customer Card is open                                       | 1. Enter Hi or any value shorter than 3 characters. 2. Move off the field or save the record.                                          | System raises validation error and value is not accepted                 | User confirms invalid short entries are blocked consistently                                              |
+| TS-06 | Functional       | Verify exactly 3 characters are accepted            | Customer Card is open                                       | 1. Enter ABC. 2. Save the record.                                                                                                       | Record saves successfully                                                | User confirms the minimum rule works exactly as specified, not more restrictive than required             |
+| TS-07 | Functional       | Verify data persists after reopen                   | Customer has a valid note saved                             | 1. Save record. 2. Close Customer Card. 3. Reopen the same customer.                                                                    | Saved value remains in Hello World Note                                  | User confirms value is stored correctly and remains visible after reopening                               |
+| TS-08 | Functional       | Verify new customer entry supports the field        | Extension installed                                         | 1. Create a new customer. 2. Enter standard mandatory fields. 3. Enter valid Hello World Note. 4. Save.                                 | New customer is created successfully with the custom field value         | User confirms the field works for both new and existing customers                                         |
+| TS-09 | Regression       | Verify standard customer fields are unaffected      | Extension installed                                         | 1. Edit standard fields such as Name, Address, Phone No. 2. Save record.                                                                | Standard fields continue to behave as before                             | User confirms no regression in standard Customer Card behavior                                            |
+| TS-10 | Regression       | Verify page loads normally when custom field is unused | Extension installed                                      | 1. Open multiple customer cards that have blank note values.                                                                            | Customer Card opens normally with no errors or forced input              | User confirms the extension does not make the process slower or more complicated                          |
+| TS-11 | UX / Optional Logic | Verify optional message trigger behavior, if implemented | Optional Message(...) logic is enabled                | 1. Enter a valid note. 2. Validate/save record.                                                                                          | Informational message displays once as designed                          | User confirms the message is acceptable for demo/UAT purposes, or requests its removal for production     |
+| TS-12 | Data Quality     | Verify long but valid text within field size        | Customer Card is open                                       | 1. Enter a long value up to defined field length. 2. Save.                                                                              | Record saves successfully within field size limit                        | User confirms expected business note size is sufficient                                                   |
+| TS-13 | Permission / Access | Verify users with normal customer maintenance access can use the field | Test user has standard customer edit permissions | 1. Log in as target business user. 2. Open Customer Card. 3. Edit note field.                                                            | User can view/edit the field if they can edit customer records           | User confirms no extra permission setup is required beyond normal customer maintenance                    |
+| TS-14 | Upgrade-Safe Behavior | Verify no direct base object modification is required | Source code is available for review                     | 1. Review extension objects. 2. Confirm use of tableextension and pageextension only.                                                    | No base Microsoft object is modified directly                            | Developer and tester confirm solution aligns with extension best practices                                |
+| TS-15 | Naming / Technical Quality | Verify naming and object IDs follow agreed conventions | Source code is available for review                | 1. Review extension object fields, field names, and IDs. 2. Compare with design standard.                                                | IDs and names follow agreed prefix/range conventions                     | Developer confirms technical implementation matches coding standards before release                      |
+
+
+15. Suggested UAT Sign-Off Checklist
+
+| Area                  | Acceptance Question                                                                                  | Pass/Fail | Comments |
+|-----------------------|------------------------------------------------------------------------------------------------------|-----------|----------|
+| Deployment            | Does the extension deploy without affecting existing customer functionality?                         |           |          |
+| UI                    | Is the Hello World Note field visible in the expected place on Customer Card?                        |           |          |
+| Validation            | Is the field caption understandable to business users?                                               |           |          |
+| Validation            | Does the system block values shorter than 3 characters?                                              |           |          |
+| Flexibility           | Is blank allowed when no note is needed?                                                             |           |          |
+| Persistence           | Does the saved value remain after closing and reopening the record?                                  |           |          |
+| Regression            | Are standard customer fields and processes unaffected?                                               |           |          |
+| Production Readiness  | If a popup message is included, is it acceptable for production use?                                 |           |          |
+| Technical Compliance  | Was the solution delivered only through extension objects, with no base object changes?              |           |          |
+| Final Approval        | Is the extension acceptable for release to production?                                               |           |          |
+
+
+16. Recommended UAT Entry/Exit Criteria
+
+| Stage     | Criteria                                                                                                                              |
+|-----------|---------------------------------------------------------------------------------------------------------------------------------------|
+| UAT Entry | Extension deployed to test/UAT environment, Customer Card accessible, tester has permission to create/edit customers                  |
+| UAT Exit  | All critical and high-priority scenarios passed, no blocking defects remain, business owner signs off on field behavior and placement |
+
+
+17. Out of Scope
+
+Integration with APIs, translation files (XLIFF), permission set configurations, or data migration tasks are out of scope for this minimal demonstration. It acts strictly as an entry-level functional validation component.
+
+
+18. Final Implementation Summary
+
+This technical requirement document provides all details necessary for rapid development and validation of a functional Business Central AL extension. Adhering to the configurations provided ensures an isolated, upgrade-ready deployment that respects standard Microsoft architectures.</div>
+          <div class="cards">
+            <div class="card">
+              <div class="agent">Claude Code</div>
+              <div class="score good">96.5</div>
+              <div class="meta">🥇</div>
+            </div>
+            <div class="card">
+              <div class="agent">Darts</div>
+              <div class="score ok">71.2</div>
+              <div class="meta">🥈</div>
+            </div></div>
+          <h2>Score breakdown</h2>
+          
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Axis</th><th>Claude Code</th><th>Darts</th></tr></thead>
+        <tbody><tr>
+          <td class="axis-name">
+            <div class="axis-title">functional_correctness</div>
+            <div class="axis-blurb"></div>
+          </td><td class="score-cell good">97</td><td class="score-cell good">84</td>
+        </tr><tr>
+          <td class="axis-name">
+            <div class="axis-title">code_quality</div>
+            <div class="axis-blurb"></div>
+          </td><td class="score-cell good">95</td><td class="score-cell ok">66</td>
+        </tr><tr>
+          <td class="axis-name">
+            <div class="axis-title">spec_understanding</div>
+            <div class="axis-blurb"></div>
+          </td><td class="score-cell good">98</td><td class="score-cell warn">58</td>
+        </tr><tr>
+      <td class="axis-name"><div class="axis-title"><strong>Weighted total</strong></div></td>
+      <td class="score-cell good"><strong>96.5</strong></td><td class="score-cell ok"><strong>71.2</strong></td>
+    </tr></tbody>
+      </table>
+    </div>
+          <h2 style="margin-top:24px">Reasoning (best run per agent)</h2>
+          
+    <div class="agent-section">
+      <div class="agent-summary">
+        <div class="agent-score good">96.5<span class="agent-score-label">weighted</span></div>
+        <div>
+          <h2 style="margin:0 0 4px">Claude Code</h2>
+          <div style="font-size:13px;color:var(--muted)">2 files produced</div>
+        </div>
+      </div>
+      
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-claude-code-functional-correctness')">
+            <span class="ax-label">functional_correctness</span>
+            <span class="ax-score good">97</span>
+            <span class="chev" id="chev-uc-pte-hello-world-note-claude-code-functional-correctness">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-uc-pte-hello-world-note-claude-code-functional-correctness">[Council mean=97; representative from Sonnet 4.6] All spec&#x27;d behaviors verified at runtime: the &#x27;Hello World Note&#x27; field renders in the General FastTab on Customer Card (ARIA ref f1e246), entering &#x27;Hi&#x27; (2 chars) triggered the exact validation error &#x27;Hello World Note must contain at least 3 characters&#x27; (paragraph ref f1e709) with &#x27;Not saved&#x27; status, entering &#x27;ABC&#x27; (3 chars) saved successfully, and the field was initially blank and accepted. Zero compilation errors. Minor deduction for not explicitly re-opening the record to confirm persistence, though the &#x27;Saved&#x27; status confirms the write succeeded.</div>
+        </div>
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-claude-code-code-quality')">
+            <span class="ax-label">code_quality</span>
+            <span class="ax-score good">95</span>
+            <span class="chev" id="chev-uc-pte-hello-world-note-claude-code-code-quality">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-uc-pte-hello-world-note-claude-code-code-quality">[Council mean=95; representative from Sonnet 4.6] Both files follow idiomatic AL: correct extension object types (tableextension 50100, pageextension 50110), PTE prefix on all objects and fields, IDs within the 50000–99999 range, DataClassification = CustomerContent on the field, Caption and ToolTip on the page field, ApplicationArea = All, and addlast(General) for proper placement. app.json has NoImplicitWith enabled and runtime 16.0. File names are descriptive (PTECustomerExt.TableExt.al, PTECustomerCardExt.PageExt.al). The only trivial point is the page-field control identifier &#x27;PTEHelloWorldNote&#x27; omits spaces, which is acceptable but slightly inconsistent with the field name style.</div>
+        </div>
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-claude-code-spec-understanding')">
+            <span class="ax-label">spec_understanding</span>
+            <span class="ax-score good">98</span>
+            <span class="chev" id="chev-uc-pte-hello-world-note-claude-code-spec-understanding">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-uc-pte-hello-world-note-claude-code-spec-understanding">[Council mean=98; representative from Sonnet 4.6] Agent implemented every acceptance criterion precisely: only tableextension + pageextension objects (no base modifications), correct field name &#x27;PTE Hello World Note&#x27; as Text[100] with ID 50100, addlast(General) placement on Customer Card, blank-exits-early + StrLen&lt;3 Error pattern exactly matching the spec&#x27;s code design, and consistent PTE prefix/ID range. Exactly 2 files and 2 objects — zero scope creep. The implementation mirrors the spec&#x27;s reference code almost verbatim, demonstrating thorough understanding of the requirement.</div>
+        </div>
+    </div>
+    <div class="agent-section">
+      <div class="agent-summary">
+        <div class="agent-score ok">71.2<span class="agent-score-label">weighted</span></div>
+        <div>
+          <h2 style="margin:0 0 4px">Darts</h2>
+          <div style="font-size:13px;color:var(--muted)">5 files produced</div>
+        </div>
+      </div>
+      
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-static-functional-correctness')">
+            <span class="ax-label">functional_correctness</span>
+            <span class="ax-score good">84</span>
+            <span class="chev" id="chev-uc-pte-hello-world-note-static-functional-correctness">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-uc-pte-hello-world-note-static-functional-correctness">[Council mean=84; representative from Opus 4.6] All core acceptance criteria are met: the &#x27;Hello World Note&#x27; field renders in the General FastTab on Customer Card, blank values are accepted without error, values under 3 characters trigger the validation error, and values of 3+ characters save successfully (verified via Playwright on customer 10000). Minor deduction: the optional Message() popup fires on every valid save (&#x27;Hello World Note updated successfully for customer: Adatum Corporation&#x27;), which the spec explicitly recommends omitting for production to avoid intrusive popups.</div>
+        </div>
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-static-code-quality')">
+            <span class="ax-label">code_quality</span>
+            <span class="ax-score ok">66</span>
+            <span class="chev" id="chev-uc-pte-hello-world-note-static-code-quality">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-uc-pte-hello-world-note-static-code-quality">[Council mean=66; representative from Sonnet 4.6] Strengths: correct NoImplicitWith/Rec. prefix usage, DataClassification = CustomerContent, ApplicationArea = All, ToolTip present, GuiAllowed guard on the Message() call. Weaknesses: the tableextension field Caption is &#x27;PTE Hello World Note&#x27; instead of the spec&#x27;s &#x27;Hello World Note&#x27; (the pageextension overrides it at runtime, masking the issue); all AL files are cluttered with excessive inline comments referencing test IDs (TS-01 through TS-09) that belong in external documents, not source code; tableextension and codeunit both use object ID 50000 (AL allows cross-type ID reuse, but it&#x27;s an unnecessary naming collision).</div>
+        </div>
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('uc-pte-hello-world-note-static-spec-understanding')">
+            <span class="ax-label">spec_understanding</span>
+            <span class="ax-score warn">58</span>
+            <span class="chev" id="chev-uc-pte-hello-world-note-static-spec-understanding">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-uc-pte-hello-world-note-static-spec-understanding">[Council mean=58; representative from Sonnet 4.6] All five explicit acceptance criteria are implemented (extension-only objects, Customer table extended with the field, field on Customer Card, ≥3-char validation, clean compile). However, three files are entirely out of spec scope: CustomerListExt.al (adds a &#x27;Say Hello&#x27; action to Customer List), HelloWorld.al (a codeunit that just shows &#x27;Hello World&#x27;), and PTEHelloWorld.Permissionset.al — Section 17 of the spec explicitly excludes permission set configurations. The invented &#x27;Say Hello&#x27; action and Hello World codeunit indicate the agent treated the spec&#x27;s title as a creative prompt rather than a strict requirements document.</div>
+        </div>
+    </div>
+        </div>
+    </section>
+  <section id="sec-council" class="section">
+
+    <div class="council-run-card">
+      <div class="council-run-header">
+        <div class="council-run-meta">
+          <span class="run-badge">2026-05-11-160744</span>
+          <code class="task-badge">pte-hello-world-note</code>
+          <span class="council-badge">🏛️ Council</span>
+        </div>
+        <div class="council-score-block">
+          <div class="council-final-score ok">71.2</div>
+          <div class="council-score-label">weighted avg<br>
+            <span style="color:var(--muted);font-size:11px">4/4 members · $3.0665</span>
+          </div>
+        </div>
+      </div>
+      <div class="inner-label">Per-axis council scores</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Axis</th>
+              <th style="text-align:center">Mean</th>
+              <th style="text-align:center">Std Dev</th>
+              <th style="text-align:center">Range</th>
+              <th style="text-align:center">Weight</th>
+              <th>Confidence</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="axis-title-sm">functional_correctness</div></td>
+              <td class="score-cell good">84.5</td>
+              <td style="text-align:center;color:var(--muted)">±6.4</td>
+              <td style="text-align:center">
+                <div class="range-bar-wrap">
+                  <div class="range-track">
+                    <div class="range-fill" style="left:62px;width:9px"></div>
+                    <div class="range-mean" style="left:67px"></div>
+                  </div>
+                  <span class="range-label">78–90</span>
+                </div>
+              </td>
+              <td style="text-align:center;color:var(--muted)">0%</td>
+              <td><span class="conf-badge stable">✓ Stable</span></td>
+            </tr>
+            <tr>
+              <td><div class="axis-title-sm">code_quality</div></td>
+              <td class="score-cell ok">66.2</td>
+              <td style="text-align:center;color:var(--muted)">±8.3</td>
+              <td style="text-align:center">
+                <div class="range-bar-wrap">
+                  <div class="range-track">
+                    <div class="range-fill" style="left:46px;width:15px"></div>
+                    <div class="range-mean" style="left:52px"></div>
+                  </div>
+                  <span class="range-label">58–77</span>
+                </div>
+              </td>
+              <td style="text-align:center;color:var(--muted)">0%</td>
+              <td><span class="conf-badge stable">✓ Stable</span></td>
+            </tr>
+            <tr>
+              <td><div class="axis-title-sm">spec_understanding</div></td>
+              <td class="score-cell warn">58.5</td>
+              <td style="text-align:center;color:var(--muted)">±6.0</td>
+              <td style="text-align:center">
+                <div class="range-bar-wrap">
+                  <div class="range-track">
+                    <div class="range-fill" style="left:41px;width:10px"></div>
+                    <div class="range-mean" style="left:46px"></div>
+                  </div>
+                  <span class="range-label">52–65</span>
+                </div>
+              </td>
+              <td style="text-align:center;color:var(--muted)">0%</td>
+              <td><span class="conf-badge stable">✓ Stable</span></td>
+            </tr></tbody></table></div>
+      <div class="inner-label" style="margin-top:20px">Member run breakdown</div>
+      <div class="member-grid">
+        <div class="member-card ">
+          <div class="member-header" style="border-left:3px solid #0369a1">
+            <div>
+              <div class="member-label">Sonnet 4.6 · Run 1</div>
+              <div class="member-model" style="color:#0369a1">claude-sonnet-4-6</div>
+            </div>
+            <div class="member-score ok">✓ 78.6</div>
+          </div>
+          <div class="member-meta">
+            <span>💰 $0.5030</span>
+            <span>🔄 26 turns</span>
+          </div>
+          <div class="mini-axes">
+                <div class="mini-axis">
+                  <div class="mini-axis-label">functional_corre</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill good" style="width:90%"></div>
+                  </div>
+                  <div class="mini-axis-score good">90</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">code_quality</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill ok" style="width:77%"></div>
+                  </div>
+                  <div class="mini-axis-score ok">77</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">spec_understandi</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill ok" style="width:65%"></div>
+                  </div>
+                  <div class="mini-axis-score ok">65</div>
+                </div></div>
+        </div>
+        <div class="member-card ">
+          <div class="member-header" style="border-left:3px solid #0369a1">
+            <div>
+              <div class="member-label">Sonnet 4.6 · Run 2</div>
+              <div class="member-model" style="color:#0369a1">claude-sonnet-4-6</div>
+            </div>
+            <div class="member-score ok">✓ 75.0</div>
+          </div>
+          <div class="member-meta">
+            <span>💰 $0.9234</span>
+            <span>🔄 50 turns</span>
+          </div>
+          <div class="mini-axes">
+                <div class="mini-axis">
+                  <div class="mini-axis-label">functional_corre</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill good" style="width:90%"></div>
+                  </div>
+                  <div class="mini-axis-score good">90</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">code_quality</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill ok" style="width:68%"></div>
+                  </div>
+                  <div class="mini-axis-score ok">68</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">spec_understandi</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill ok" style="width:62%"></div>
+                  </div>
+                  <div class="mini-axis-score ok">62</div>
+                </div></div>
+        </div>
+        <div class="member-card ">
+          <div class="member-header" style="border-left:3px solid #7c3aed">
+            <div>
+              <div class="member-label">Opus 4.6 · Run 1</div>
+              <div class="member-model" style="color:#7c3aed">claude-opus-4-6</div>
+            </div>
+            <div class="member-score ok">✓ 66.3</div>
+          </div>
+          <div class="member-meta">
+            <span>💰 $0.7028</span>
+            <span>🔄 24 turns</span>
+          </div>
+          <div class="mini-axes">
+                <div class="mini-axis">
+                  <div class="mini-axis-label">functional_corre</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill ok" style="width:78%"></div>
+                  </div>
+                  <div class="mini-axis-score ok">78</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">code_quality</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill ok" style="width:62%"></div>
+                  </div>
+                  <div class="mini-axis-score ok">62</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">spec_understandi</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill warn" style="width:55%"></div>
+                  </div>
+                  <div class="mini-axis-score warn">55</div>
+                </div></div>
+        </div>
+        <div class="member-card ">
+          <div class="member-header" style="border-left:3px solid #7c3aed">
+            <div>
+              <div class="member-label">Opus 4.6 · Run 2</div>
+              <div class="member-model" style="color:#7c3aed">claude-opus-4-6</div>
+            </div>
+            <div class="member-score ok">✓ 65.0</div>
+          </div>
+          <div class="member-meta">
+            <span>💰 $0.9373</span>
+            <span>🔄 34 turns</span>
+          </div>
+          <div class="mini-axes">
+                <div class="mini-axis">
+                  <div class="mini-axis-label">functional_corre</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill good" style="width:80%"></div>
+                  </div>
+                  <div class="mini-axis-score good">80</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">code_quality</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill warn" style="width:58%"></div>
+                  </div>
+                  <div class="mini-axis-score warn">58</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">spec_understandi</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill warn" style="width:52%"></div>
+                  </div>
+                  <div class="mini-axis-score warn">52</div>
+                </div></div>
+        </div></div>
+      <div class="inner-label" style="margin-top:20px">
+        <span onclick="toggleCouncilReasoning('council-reasoning-2026-05-11-160744')" style="cursor:pointer;user-select:none">
+          Per-axis reasoning from all members
+          <span class="chev" id="chev-council-reasoning-2026-05-11-160744">&#9654;</span>
+        </span>
+      </div>
+      <div id="council-reasoning-2026-05-11-160744" style="display:none">
+        <div class="reasoning-axis-block">
+          <div class="reasoning-axis-title">functional_correctness</div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 1</span>
+                <span class="re-score good">90</span>
+              </div>
+              <div class="re-text">All required behaviors confirmed at runtime via Playwright: &#x27;Hello World Note&#x27; field renders in the General FastTab on Customer Card; entering &#x27;Hi&#x27; (2 chars) triggers &#x27;Hello World Note must be at least 3 characters long.&#x27; and prevents save; entering &#x27;ABC&#x27; (exactly 3 chars) saves successfully with the &#x27;Saved&#x27; indicator; the optional Message() dialog fires. Blank-exit logic is correctly coded (`if Rec.&quot;PTE Hello World Note&quot; = &#x27;&#x27; then exit`). Compilation was clean with 0 warnings and 0 errors.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 2</span>
+                <span class="re-score good">90</span>
+              </div>
+              <div class="re-text">All core runtime behaviors verified via Playwright: the &#x27;Hello World Note&#x27; field renders in the General FastTab on Customer Card, the OnValidate trigger correctly rejects values shorter than 3 characters (error &#x27;Hello World Note must be at least 3 characters long.&#x27; confirmed), and a 3-character value &#x27;ABC&#x27; saves cleanly. Blank handling exits early per spec. Minor deduction: the error message wording differs slightly from the spec (&#x27;must be at least 3 characters long&#x27; vs spec&#x27;s &#x27;must contain at least 3 characters&#x27;), and the optional Message() popup is included though the spec recommends against it for production.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 1</span>
+                <span class="re-score ok">78</span>
+              </div>
+              <div class="re-text">All core functional requirements work: the &#x27;Hello World Note&#x27; field renders on the Customer Card in the General FastTab (confirmed via Playwright), the OnValidate trigger correctly blocks values shorter than 3 characters (entering &#x27;Hi&#x27; produced the error &#x27;Hello World Note must be at least 3 characters long.&#x27; with page status &#x27;Not saved&#x27;), exactly 3 characters (&#x27;ABC&#x27;) was saved successfully, and blank values are handled by the exit statement. However, the inclusion of a Message() popup on every valid save is intrusive UX behavior the spec explicitly recommended against for production, and the unrequested &#x27;Say Hello&#x27; action button on the Customer Card adds UI clutter not specified in the requirements.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 2</span>
+                <span class="re-score good">80</span>
+              </div>
+              <div class="re-text">All core acceptance criteria are met: the &#x27;Hello World Note&#x27; field renders in the General FastTab on Customer Card, blank values are accepted without error, values under 3 characters trigger the validation error, and values of 3+ characters save successfully (verified via Playwright on customer 10000). Minor deduction: the optional Message() popup fires on every valid save (&#x27;Hello World Note updated successfully for customer: Adatum Corporation&#x27;), which the spec explicitly recommends omitting for production to avoid intrusive popups.</div>
+            </div></div>
+        <div class="reasoning-axis-block">
+          <div class="reasoning-axis-title">code_quality</div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 1</span>
+                <span class="re-score ok">77</span>
+              </div>
+              <div class="re-text">Correct object types (tableextension 50000, pageextension 50110), IDs in the PTE range, proper `Rec.` prefix throughout (NoImplicitWith compliant), and all AppSource-required properties present (Caption, ToolTip, DataClassification, ApplicationArea). Deductions: the table-layer field Caption is &#x27;PTE Hello World Note&#x27; rather than the spec-prescribed &#x27;Hello World Note&#x27; (mitigated by the page-level caption override); excessive TS-annotated inline comments (TS-01 through TS-09) are noise; and ID 50000 is reused identically across tableextension, codeunit, and permissionset objects — technically valid in AL&#x27;s per-type namespace but poor practice for clarity.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 2</span>
+                <span class="re-score ok">68</span>
+              </div>
+              <div class="re-text">Strengths: correct NoImplicitWith/Rec. prefix usage, DataClassification = CustomerContent, ApplicationArea = All, ToolTip present, GuiAllowed guard on the Message() call. Weaknesses: the tableextension field Caption is &#x27;PTE Hello World Note&#x27; instead of the spec&#x27;s &#x27;Hello World Note&#x27; (the pageextension overrides it at runtime, masking the issue); all AL files are cluttered with excessive inline comments referencing test IDs (TS-01 through TS-09) that belong in external documents, not source code; tableextension and codeunit both use object ID 50000 (AL allows cross-type ID reuse, but it&#x27;s an unnecessary naming collision).</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 1</span>
+                <span class="re-score ok">62</span>
+              </div>
+              <div class="re-text">The AL code is structurally correct — proper use of tableextension/pageextension, correct DataClassification, ApplicationArea, and ToolTip on the page field. However, the table field Caption is &#x27;PTE Hello World Note&#x27; instead of the spec&#x27;s &#x27;Hello World Note&#x27; (PTE prefix leaks into the user-facing label). Comments throughout reference test scenario IDs (TS-01, TS-02, etc.) which is poor practice — comments should explain why, not map to external test matrices. The Message() call in OnValidate fires on every valid entry, degrading UX. Object IDs (50000 for table extension/field) differ from the spec&#x27;s suggested 50100, though they remain in valid PTE range. Three extra files (HelloWorld.al codeunit, CustomerListExt.al, PTEHelloWorld.Permissionset.al) add unnecessary objects.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 2</span>
+                <span class="re-score warn">58</span>
+              </div>
+              <div class="re-text">Code compiles cleanly and includes required properties (DataClassification=CustomerContent, ApplicationArea=All, ToolTip). However, quality is dragged down by: 3 unnecessary files beyond the spec (HelloWorld.al codeunit, CustomerListExt.al page extension, PTEHelloWorld.Permissionset.al), verbose test-scenario comments littered throughout (TS-01, TS-02, etc.), field Caption set to &#x27;PTE Hello World Note&#x27; instead of the spec&#x27;s &#x27;Hello World Note&#x27;, and object/field IDs (50000) deviating from the spec&#x27;s design (50100/50110). The extra &#x27;Say Hello&#x27; action added to both Customer Card and Customer List is unrelated to the spec.</div>
+            </div></div>
+        <div class="reasoning-axis-block">
+          <div class="reasoning-axis-title">spec_understanding</div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 1</span>
+                <span class="re-score ok">65</span>
+              </div>
+              <div class="re-text">All acceptance criteria are correctly implemented: PTE-prefixed table/page extension objects, field in correct location, validation logic accurate. However, the spec explicitly described a &#x27;minimal&#x27; extension requiring exactly 2 objects; this submission delivers 5 files including an unsolicited Customer List page extension with a &#x27;Say Hello&#x27; action, a standalone &#x27;PTE Hello World&#x27; codeunit, and a permission set — none of which were requested. The Customer Card also received an unspecified &#x27;Say Hello&#x27; navigation action. This scope creep contradicts the spec&#x27;s emphasis on non-intrusion and minimalism.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 2</span>
+                <span class="re-score ok">62</span>
+              </div>
+              <div class="re-text">All five explicit acceptance criteria are implemented (extension-only objects, Customer table extended with the field, field on Customer Card, ≥3-char validation, clean compile). However, three files are entirely out of spec scope: CustomerListExt.al (adds a &#x27;Say Hello&#x27; action to Customer List), HelloWorld.al (a codeunit that just shows &#x27;Hello World&#x27;), and PTEHelloWorld.Permissionset.al — Section 17 of the spec explicitly excludes permission set configurations. The invented &#x27;Say Hello&#x27; action and Hello World codeunit indicate the agent treated the spec&#x27;s title as a creative prompt rather than a strict requirements document.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 1</span>
+                <span class="re-score warn">55</span>
+              </div>
+              <div class="re-text">The core requirements were correctly identified and implemented: one custom Text[100] field on Customer via tableextension, exposed on Customer Card via pageextension with addlast(General), and the &lt; 3 character validation with blank-allowed logic. However, scope discipline is poor. Three out of five files (CustomerListExt.al, HelloWorld.al, PTEHelloWorld.Permissionset.al) are entirely unrequested — the spec explicitly states &#x27;permission set configurations … are out of scope,&#x27; yet one was created. A &#x27;Say Hello&#x27; codeunit and action on both Customer Card and Customer List have no basis in the spec. The optional Message() was included despite the spec recommending &#x27;keep only the Error(…) validation&#x27; for production implementations.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 2</span>
+                <span class="re-score warn">52</span>
+              </div>
+              <div class="re-text">The core requirements are satisfied: tableextension extends Customer with &#x27;PTE Hello World Note&#x27; Text[100] field, pageextension exposes it on Customer Card, and validation rejects non-blank values under 3 characters. However, there is substantial scope creep: 3 extra objects not requested (a &#x27;Say Hello&#x27; codeunit, a Customer List page extension with an action, and a permission set). Section 17 of the spec explicitly puts permission sets out of scope. Including the Message() popup contradicts the spec&#x27;s production recommendation. The agent treated this as a broader &#x27;Hello World&#x27; exercise rather than the minimal, targeted extension the spec defined.</div>
+            </div></div></div></div>
+    <div class="council-run-card">
+      <div class="council-run-header">
+        <div class="council-run-meta">
+          <span class="run-badge">2026-05-11-162816</span>
+          <code class="task-badge">pte-hello-world-note</code>
+          <span class="council-badge">🏛️ Council</span>
+        </div>
+        <div class="council-score-block">
+          <div class="council-final-score good">96.5</div>
+          <div class="council-score-label">weighted avg<br>
+            <span style="color:var(--muted);font-size:11px">4/4 members · $2.3269</span>
+          </div>
+        </div>
+      </div>
+      <div class="inner-label">Per-axis council scores</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Axis</th>
+              <th style="text-align:center">Mean</th>
+              <th style="text-align:center">Std Dev</th>
+              <th style="text-align:center">Range</th>
+              <th style="text-align:center">Weight</th>
+              <th>Confidence</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="axis-title-sm">functional_correctness</div></td>
+              <td class="score-cell good">96.8</td>
+              <td style="text-align:center;color:var(--muted)">±1.3</td>
+              <td style="text-align:center">
+                <div class="range-bar-wrap">
+                  <div class="range-track">
+                    <div class="range-fill" style="left:76px;width:4px"></div>
+                    <div class="range-mean" style="left:77px"></div>
+                  </div>
+                  <span class="range-label">95–98</span>
+                </div>
+              </td>
+              <td style="text-align:center;color:var(--muted)">0%</td>
+              <td><span class="conf-badge stable">✓ Stable</span></td>
+            </tr>
+            <tr>
+              <td><div class="axis-title-sm">code_quality</div></td>
+              <td class="score-cell good">95.0</td>
+              <td style="text-align:center;color:var(--muted)">±1.6</td>
+              <td style="text-align:center">
+                <div class="range-bar-wrap">
+                  <div class="range-track">
+                    <div class="range-fill" style="left:74px;width:4px"></div>
+                    <div class="range-mean" style="left:76px"></div>
+                  </div>
+                  <span class="range-label">93–97</span>
+                </div>
+              </td>
+              <td style="text-align:center;color:var(--muted)">0%</td>
+              <td><span class="conf-badge stable">✓ Stable</span></td>
+            </tr>
+            <tr>
+              <td><div class="axis-title-sm">spec_understanding</div></td>
+              <td class="score-cell good">97.5</td>
+              <td style="text-align:center;color:var(--muted)">±0.6</td>
+              <td style="text-align:center">
+                <div class="range-bar-wrap">
+                  <div class="range-track">
+                    <div class="range-fill" style="left:77px;width:4px"></div>
+                    <div class="range-mean" style="left:78px"></div>
+                  </div>
+                  <span class="range-label">97–98</span>
+                </div>
+              </td>
+              <td style="text-align:center;color:var(--muted)">0%</td>
+              <td><span class="conf-badge stable">✓ Stable</span></td>
+            </tr></tbody></table></div>
+      <div class="inner-label" style="margin-top:20px">Member run breakdown</div>
+      <div class="member-grid">
+        <div class="member-card ">
+          <div class="member-header" style="border-left:3px solid #0369a1">
+            <div>
+              <div class="member-label">Sonnet 4.6 · Run 1</div>
+              <div class="member-model" style="color:#0369a1">claude-sonnet-4-6</div>
+            </div>
+            <div class="member-score good">✓ 95.8</div>
+          </div>
+          <div class="member-meta">
+            <span>💰 $0.3975</span>
+            <span>🔄 19 turns</span>
+          </div>
+          <div class="mini-axes">
+                <div class="mini-axis">
+                  <div class="mini-axis-label">functional_corre</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill good" style="width:97%"></div>
+                  </div>
+                  <div class="mini-axis-score good">97</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">code_quality</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill good" style="width:93%"></div>
+                  </div>
+                  <div class="mini-axis-score good">93</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">spec_understandi</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill good" style="width:97%"></div>
+                  </div>
+                  <div class="mini-axis-score good">97</div>
+                </div></div>
+        </div>
+        <div class="member-card ">
+          <div class="member-header" style="border-left:3px solid #0369a1">
+            <div>
+              <div class="member-label">Sonnet 4.6 · Run 2</div>
+              <div class="member-model" style="color:#0369a1">claude-sonnet-4-6</div>
+            </div>
+            <div class="member-score good">✓ 96.8</div>
+          </div>
+          <div class="member-meta">
+            <span>💰 $0.3660</span>
+            <span>🔄 19 turns</span>
+          </div>
+          <div class="mini-axes">
+                <div class="mini-axis">
+                  <div class="mini-axis-label">functional_corre</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill good" style="width:98%"></div>
+                  </div>
+                  <div class="mini-axis-score good">98</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">code_quality</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill good" style="width:95%"></div>
+                  </div>
+                  <div class="mini-axis-score good">95</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">spec_understandi</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill good" style="width:97%"></div>
+                  </div>
+                  <div class="mini-axis-score good">97</div>
+                </div></div>
+        </div>
+        <div class="member-card ">
+          <div class="member-header" style="border-left:3px solid #7c3aed">
+            <div>
+              <div class="member-label">Opus 4.6 · Run 1</div>
+              <div class="member-model" style="color:#7c3aed">claude-opus-4-6</div>
+            </div>
+            <div class="member-score good">✓ 96.5</div>
+          </div>
+          <div class="member-meta">
+            <span>💰 $0.6156</span>
+            <span>🔄 21 turns</span>
+          </div>
+          <div class="mini-axes">
+                <div class="mini-axis">
+                  <div class="mini-axis-label">functional_corre</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill good" style="width:95%"></div>
+                  </div>
+                  <div class="mini-axis-score good">95</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">code_quality</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill good" style="width:97%"></div>
+                  </div>
+                  <div class="mini-axis-score good">97</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">spec_understandi</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill good" style="width:98%"></div>
+                  </div>
+                  <div class="mini-axis-score good">98</div>
+                </div></div>
+        </div>
+        <div class="member-card ">
+          <div class="member-header" style="border-left:3px solid #7c3aed">
+            <div>
+              <div class="member-label">Opus 4.6 · Run 2</div>
+              <div class="member-model" style="color:#7c3aed">claude-opus-4-6</div>
+            </div>
+            <div class="member-score good">✓ 96.7</div>
+          </div>
+          <div class="member-meta">
+            <span>💰 $0.9477</span>
+            <span>🔄 30 turns</span>
+          </div>
+          <div class="mini-axes">
+                <div class="mini-axis">
+                  <div class="mini-axis-label">functional_corre</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill good" style="width:97%"></div>
+                  </div>
+                  <div class="mini-axis-score good">97</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">code_quality</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill good" style="width:95%"></div>
+                  </div>
+                  <div class="mini-axis-score good">95</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">spec_understandi</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill good" style="width:98%"></div>
+                  </div>
+                  <div class="mini-axis-score good">98</div>
+                </div></div>
+        </div></div>
+      <div class="inner-label" style="margin-top:20px">
+        <span onclick="toggleCouncilReasoning('council-reasoning-2026-05-11-162816')" style="cursor:pointer;user-select:none">
+          Per-axis reasoning from all members
+          <span class="chev" id="chev-council-reasoning-2026-05-11-162816">&#9654;</span>
+        </span>
+      </div>
+      <div id="council-reasoning-2026-05-11-162816" style="display:none">
+        <div class="reasoning-axis-block">
+          <div class="reasoning-axis-title">functional_correctness</div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 1</span>
+                <span class="re-score good">97</span>
+              </div>
+              <div class="re-text">All spec&#x27;d behaviors verified at runtime: the &#x27;Hello World Note&#x27; field renders in the General FastTab on Customer Card (ARIA ref f1e246), entering &#x27;Hi&#x27; (2 chars) triggered the exact validation error &#x27;Hello World Note must contain at least 3 characters&#x27; (paragraph ref f1e709) with &#x27;Not saved&#x27; status, entering &#x27;ABC&#x27; (3 chars) saved successfully, and the field was initially blank and accepted. Zero compilation errors. Minor deduction for not explicitly re-opening the record to confirm persistence, though the &#x27;Saved&#x27; status confirms the write succeeded.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 2</span>
+                <span class="re-score good">98</span>
+              </div>
+              <div class="re-text">Runtime verification confirmed all spec behaviors: the &#x27;Hello World Note&#x27; field renders in the General FastTab of the Customer Card (visible as textbox ref f1e651 with existing value &#x27;ABC&#x27;); entering &#x27;Hi&#x27; (2 chars) and tabbing off triggered the exact error message &#x27;Hello World Note must contain at least 3 characters&#x27; with the page entering &#x27;Not saved&#x27; state; the blank-exit guard works by logic (if field = &#x27;&#x27; then exit); and the extension compiled with 0 errors and 0 warnings. No functional gaps detected.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 1</span>
+                <span class="re-score good">95</span>
+              </div>
+              <div class="re-text">All runtime behaviors verified via Playwright. The &#x27;Hello World Note&#x27; field renders in the General FastTab on the Customer Card (visible with value &#x27;ABC&#x27; from prior test). Entering &#x27;Hi&#x27; (2 chars) correctly fires the OnValidate trigger, showing the error &#x27;Hello World Note must contain at least 3 characters&#x27; inline and setting the page to &#x27;Not saved&#x27; error state. The blank-exit logic is correctly implemented in source (PTECustomerExt.TableExt.al:12-13). The only reason for not scoring higher is that I didn&#x27;t separately verify blank-save and 3-char-boundary acceptance at runtime, though the code logic is correct.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 2</span>
+                <span class="re-score good">97</span>
+              </div>
+              <div class="re-text">All runtime behaviors verified via Playwright: the &#x27;Hello World Note&#x27; field renders correctly in the General FastTab of Customer Card (page 21), the OnValidate trigger blocks values under 3 characters (&#x27;Hi&#x27; produced the expected error message), valid values (&#x27;Test123&#x27;) save successfully, and blank values are permitted per spec. The field previously held &#x27;ABC&#x27; (exactly 3 chars), confirming the boundary case. The only reason for not giving 100 is that blank-value acceptance was verified by code inspection rather than UI exercise, though the logic is unambiguous.</div>
+            </div></div>
+        <div class="reasoning-axis-block">
+          <div class="reasoning-axis-title">code_quality</div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 1</span>
+                <span class="re-score good">93</span>
+              </div>
+              <div class="re-text">Both AL files are clean and idiomatic: tableextension 50100 / pageextension 50110 use the PTE prefix, object IDs fall in the 50000–99999 range, DataClassification=CustomerContent, ApplicationArea=All, Caption and ToolTip are all present as required by BC conventions. The NoImplicitWith feature is enabled and the OnValidate trigger references the field correctly within a table trigger context. File naming follows AL conventions (PTECustomerExt.TableExt.al, PTECustomerCardExt.PageExt.al). No anti-patterns, duplication, or unnecessary code — only a marginal gap is the absence of explicit Rec. in the table trigger (acceptable with NoImplicitWith in table context but could be clearer).</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 2</span>
+                <span class="re-score good">95</span>
+              </div>
+              <div class="re-text">Both files follow idiomatic AL: correct extension object types (tableextension 50100, pageextension 50110), PTE prefix on all objects and fields, IDs within the 50000–99999 range, DataClassification = CustomerContent on the field, Caption and ToolTip on the page field, ApplicationArea = All, and addlast(General) for proper placement. app.json has NoImplicitWith enabled and runtime 16.0. File names are descriptive (PTECustomerExt.TableExt.al, PTECustomerCardExt.PageExt.al). The only trivial point is the page-field control identifier &#x27;PTEHelloWorldNote&#x27; omits spaces, which is acceptable but slightly inconsistent with the field name style.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 1</span>
+                <span class="re-score good">97</span>
+              </div>
+              <div class="re-text">The AL code is exemplary. Object IDs 50100/50110 are within the 50000-99999 PTE range. Naming follows PTE prefix conventions consistently (object names, field name). All required properties are present: DataClassification=CustomerContent on the table field, ApplicationArea=All, Caption, and ToolTip on the page field. File organization is clean with separate files for table extension and page extension. The code is idiomatic AL with no anti-patterns, duplication, or unnecessary complexity. Compiles with zero warnings and zero errors per the pre-computed metrics.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 2</span>
+                <span class="re-score good">95</span>
+              </div>
+              <div class="re-text">The AL code is clean, idiomatic, and follows all BC conventions. Object IDs (50100, 50110) and field ID (50100) are within the 50000–99999 PTE range. The tableextension uses correct DataClassification (CustomerContent), Caption, and OnValidate trigger. The pageextension sets ApplicationArea = All, Caption, and a descriptive ToolTip — all required by AppSourceCop-level conventions. File names follow standard AL patterns (PTECustomerExt.TableExt.al, PTECustomerCardExt.PageExt.al). Code compiled with zero warnings and zero errors. No anti-patterns, no dead code, no unnecessary complexity.</div>
+            </div></div>
+        <div class="reasoning-axis-block">
+          <div class="reasoning-axis-title">spec_understanding</div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 1</span>
+                <span class="re-score good">97</span>
+              </div>
+              <div class="re-text">Agent implemented every acceptance criterion precisely: only tableextension + pageextension objects (no base modifications), correct field name &#x27;PTE Hello World Note&#x27; as Text[100] with ID 50100, addlast(General) placement on Customer Card, blank-exits-early + StrLen&lt;3 Error pattern exactly matching the spec&#x27;s code design, and consistent PTE prefix/ID range. Exactly 2 files and 2 objects — zero scope creep. The implementation mirrors the spec&#x27;s reference code almost verbatim, demonstrating thorough understanding of the requirement.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 2</span>
+                <span class="re-score good">97</span>
+              </div>
+              <div class="re-text">Every acceptance criterion is met: extension uses only tableextension/pageextension (no base object changes), the field is Text[100] with correct ID 50100, exposed on the Customer Card General FastTab, validation blocks non-blank values shorter than 3 chars. The optional Message() popup was correctly omitted following the spec&#x27;s own production recommendation. Exactly 2 AL files written with no scope creep. The implementation maps 1:1 to the spec&#x27;s AL code design section.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 1</span>
+                <span class="re-score good">98</span>
+              </div>
+              <div class="re-text">The agent&#x27;s implementation matches the spec&#x27;s reference design nearly verbatim, covering every acceptance criterion: extension-only approach (tableextension + pageextension), single custom field &#x27;PTE Hello World Note&#x27; of Text[100], placement in the General FastTab via addlast(General), and the exact validation logic (blank allowed, &lt;3 chars blocked with Error). The optional Message() variant was correctly omitted per the spec&#x27;s own recommendation for production use. Exactly two files were produced with no scope creep. Object IDs, field IDs, captions, and error message text all match the spec precisely.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 2</span>
+                <span class="re-score good">98</span>
+              </div>
+              <div class="re-text">The agent delivered exactly what the spec asked for: one tableextension extending Customer with a single Text[100] field &#x27;PTE Hello World Note&#x27;, one pageextension adding the field to Customer Card&#x27;s General FastTab via addlast(General), and an OnValidate trigger that allows blank but errors on non-blank values under 3 characters. No scope creep — exactly 2 AL source files, no optional Message() popup (spec recommended omitting it for production), no extra objects or fields. Every acceptance criterion (AC-1 through AC-5) is satisfied. The implementation matches the spec&#x27;s provided design verbatim.</div>
+            </div></div></div></div>
+</section>
+
+  <footer>Evaluation run on Microsoft Dynamics 365 Business Central sandbox &middot; Each agent&rsquo;s extension was compiled, published, behaviorally verified, and torn down &middot; 🏛️ Council scores = mean across multiple models and runs.</footer>
+</div>
+
+<script>
+  // ── Tab navigation ─────────────────────────────────────────────────────────
+  function showSection(name, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.top-nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById('sec-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // ── Generic accordion ──────────────────────────────────────────────────────
+  function toggleAccordion(id) {
+    const body = document.getElementById('abody-' + id);
+    const chev = document.getElementById('achev-' + id);
+    if (body) body.classList.toggle('open');
+    if (chev) chev.classList.toggle('open');
+  }
+
+  // ── Table-row drill (metrics page) ────────────────────────────────────────
+  function toggleDrill(id) {
+    const body = document.getElementById('body-' + id);
+    const chev = document.getElementById('chev-' + id);
+    if (body) body.classList.toggle('open');
+    if (chev) chev.classList.toggle('open');
+  }
+
+  // ── Axis text drill (agent sections) ──────────────────────────────────────
+  function toggleAxDrill(id) {
+    const body = document.getElementById('body-' + id);
+    const chev = document.getElementById('chev-' + id);
+    if (body) body.classList.toggle('open');
+    if (chev) chev.classList.toggle('open');
+  }
+
+  // ── Use-case panel tabs ────────────────────────────────────────────────────
+  function switchUC(ucSafe) {
+    document.querySelectorAll('.uc-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.uc-tab').forEach(t => t.classList.remove('active'));
+    const panel = document.getElementById('ucp-' + ucSafe);
+    const tab   = document.getElementById('uct-' + ucSafe);
+    if (panel) panel.classList.add('active');
+    if (tab)   tab.classList.add('active');
+  }
+
+  // ── Council reasoning toggle ───────────────────────────────────────────────
+  function toggleCouncilReasoning(id) {
+    const el   = document.getElementById(id);
+    const chev = document.getElementById('chev-' + id);
+    if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    if (chev) chev.classList.toggle('open');
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  (function init() {
+    const firstUC = 'pte_hello_world_note';
+    if (firstUC) switchUC(firstUC);
+  })();
+</script>
+</body>
+</html>
