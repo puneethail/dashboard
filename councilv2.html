@@ -357,13 +357,13 @@
     <section id="sec-overall" class="section active">
       <div class="cards">
         <div class="card">
-          <div class="agent">Darts</div>
-          <div class="score warn">7.1</div>
+          <div class="agent">Claude Code</div>
+          <div class="score warn">8.9</div>
           <div class="meta">🥇 avg across all use-cases</div>
         </div>
         <div class="card">
-          <div class="agent">Claude Code</div>
-          <div class="score warn">5.5</div>
+          <div class="agent">Darts</div>
+          <div class="score warn">7.1</div>
           <div class="meta">🥈 avg across all use-cases</div>
         </div></div>
       <h2>Score breakdown by use-case</h2>
@@ -372,13 +372,13 @@
         <table>
           <thead><tr><th>Agent</th><th>02_hotel_management</th><th>pte-hello-world-note</th><th>Overall avg</th></tr></thead>
           <tbody><tr>
+          <td><strong>Claude Code</strong></td>
+          <td class="score-cell warn">8.0 🏛️</td><td class="score-cell warn">9.9 🏛️</td>
+          <td class="score-cell warn"><strong>8.9</strong></td>
+        </tr><tr>
           <td><strong>Darts</strong></td>
           <td class="score-cell warn">7.2 🏛️</td><td class="score-cell warn">7.0 🏛️</td>
           <td class="score-cell warn"><strong>7.1</strong></td>
-        </tr><tr>
-          <td><strong>Claude Code</strong></td>
-          <td class="score-cell warn">1.0 🏛️</td><td class="score-cell warn">9.9 🏛️</td>
-          <td class="score-cell warn"><strong>5.5</strong></td>
         </tr></tbody>
         </table>
       </div>
@@ -548,185 +548,654 @@
                     <span class="chev" id="achev-wk-2026-05-08-02_hotel_management">&#9654;</span>
                   </div>
                   <div class="accordion-body" id="abody-wk-2026-05-08-02_hotel_management">
-            <div class="task-spec-label">Task spec</div><div class="task-spec"># Scenario ID: BC-BENCH-010
-# Title: Hotel Reservation Lifecycle
+            <div class="task-spec-label">Task spec</div><div class="task-spec">```
+Technical Requirement Document â€” Hotel Reservation Lifecycle Extension for Microsoft Dynamics 365 Business Central
 
-## Objective
-Build a Business Central extension that supports the hotel guest lifecycle from reservation through billing.
+Document Purpose: Define requirements for a hospitality AL extension for Business Central
+Scenario ID: BC-BENCH-010
+Version: 1.0
+Date: 2026-05-14
+Intended Audience: AL Developer, Tester, Business Reviewer
 
-The extension must support:
-- Customer reservation
-- Room assignment
-- Deposit payment
-- Check-in
-- Service charges
-- Checkout
-- Invoice generation
-- VAT calculation
-- Final payment
-- Unauthorized refund prevention
 
-## Business Context
-The extension is intended for hospitality operations using Microsoft Dynamics 365 Business Central.
-It must support operational workflows while preserving financial correctness and role-based security.
+2. Brief Explanation / Overview
 
-## User Roles
+This requirement defines a per-tenant AL extension that supports the full hotel guest lifecycle within Microsoft Dynamics 365 Business Central. The extension covers reservation creation, room assignment, deposit capture, guest check-in, service charge posting, checkout, invoice generation, VAT calculation, final payment settlement, and refund access control. The solution must be delivered exclusively through AL extension objects and must not directly modify any Microsoft base objects. The design follows Microsoft&#x27;s extension model using table, tableextension, page, pageextension, codeunit, and enum objects.
 
-### Front Desk
-Can:
-- create reservations
-- assign rooms
-- capture deposits
-- check in guests
-- post service charges
-- checkout guests
 
-Cannot:
-- process refunds
-- modify tax setup
-- directly adjust finance postings
+3. Objective
 
-### Finance
-Can:
-- generate invoices
-- calculate and validate taxes
-- post and reconcile final payments
-- process refunds
-- review ledger outcomes
+To provide a developer-ready specification for a modular, upgrade-safe Business Central AL extension that models a production-shaped hospitality module. The extension must support operational workflows for Front Desk staff and financial workflows for Finance staff while enforcing role-based security separation.
 
-### Admin
-Can:
-- configure setup
-- manage room inventory setup
-- manage permissions and master data
 
-## Functional Requirements
+4. Scope
 
-### 1. Reservation Management
-The extension must support:
-- creation of reservations
-- update of reservations
-- room assignment
-- reservation status management
-- prevention of overbooking
+The scope encompasses the creation of AL objects representing hotel room inventory, guest reservations, service charge lines, deposit tracking, invoice generation, VAT calculation, final payment posting, and refund access restriction. All objects must use the PTE prefix and object IDs in the 50000â€“99999 range.
 
-Minimum reservation data:
-- Reservation No.
-- Customer No.
-- Room No.
-- Check-in Date
-- Check-out Date
-- Status
-- Deposit Amount
-- Invoice No.
 
-Reservation statuses must support:
-- Confirmed
-- Occupied
-- Closed
+5. User Roles and Permissions
 
-### 2. Room Inventory
-The extension must:
-- maintain room inventory
-- track occupancy
-- prevent overlapping use of the same room
-- release room occupancy on checkout
++------------------+-------------------------------------------------------+--------------------------------------------+
+| Role             | Permitted Actions                                     | Restricted Actions                         |
++------------------+-------------------------------------------------------+--------------------------------------------+
+| Front Desk       | Create reservations, assign rooms, capture deposits,  | Process refunds, modify tax setup,         |
+|                  | check in guests, post service charges, checkout guests| directly adjust finance postings           |
++------------------+-------------------------------------------------------+--------------------------------------------+
+| Finance          | Generate invoices, calculate and validate taxes,      | Operational room and reservation setup     |
+|                  | post and reconcile final payments, process refunds,   |                                            |
+|                  | review ledger outcomes                                |                                            |
++------------------+-------------------------------------------------------+--------------------------------------------+
+| Admin            | Configure setup, manage room inventory,               | None within extension scope                |
+|                  | manage permissions and master data                    |                                            |
++------------------+-------------------------------------------------------+--------------------------------------------+
 
-Minimum room data:
-- Room No.
-- Room Type
-- Nightly Rate
-- Occupied
 
-### 3. Deposit and Payment
-The extension must:
-- capture a deposit
-- track whether deposit was successfully captured
-- apply deposit against the final bill
-- prevent false success on failed payment
+6. Functional Scope
 
-### 4. Service Charges
-The extension must:
-- store service charge lines linked to a reservation
-- support billable services such as breakfast, laundry, and transfer
-- include service amounts in final billing
++-----------------------------+----------------------------------------------------------------------+
+| Item                        | Requirement                                                          |
++-----------------------------+----------------------------------------------------------------------+
+| Reservation Management      | Create, update, assign room, manage status, prevent overbooking      |
+| Room Inventory              | Maintain rooms, track occupancy, prevent overlap, release on checkout|
+| Deposit and Payment         | Capture deposit, track status, apply to final bill, block false success|
+| Service Charges             | Store charge lines per reservation, include in billing               |
+| Checkout and Billing        | Checkout guest, generate invoice once, calculate VAT, post financials|
+| Tax                         | VAT by configured rate, recalculate before invoicing                 |
+| Security                    | Refund restricted to Finance, Front Desk blocked from refund actions  |
++-----------------------------+----------------------------------------------------------------------+
 
-### 5. Checkout and Billing
-The extension must:
-- support guest checkout
-- generate invoice once per reservation
-- calculate VAT
-- post financial results
-- settle remaining amount due
 
-### 6. Tax
-The extension must:
-- calculate VAT based on configured rates
-- support recalculation when tax configuration changes before invoicing
-- preserve correct financial posting behavior
+7. Assumptions and Dependencies
 
-### 7. Security
-The extension must enforce:
-- refund processing restricted to Finance
-- Front Desk blocked from refund actions
-- role-based separation between operational and finance tasks
+- The target environment is Dynamics 365 Business Central cloud or on-premises running a recent supported runtime.
+- The developer has access to Visual Studio Code with the AL Language extension installed.
+- The tester has access to a Sandbox or UAT environment for installation and validation.
+- VAT rates are pre-configured in Business Central standard tax setup and referenced by the extension.
+- Customer records already exist in the standard Customer table.
+- Permission sets will be defined within the extension to support role separation.
 
-## Negative Cases
-The solution must correctly handle:
-- Overbooking
-- Failed payment
-- Duplicate invoice
-- Unauthorized refund
 
-## Quality Expectations
-The extension should be:
-- modular
-- maintainable
-- upgrade-safe
-- testable
-- deployable in a BC container
+8. AL Object Design
 
-## Expected Outcome
-A Business Central extension that behaves like a production-shaped hospitality module and supports operational, financial, and security requirements across the reservation lifecycle.</div>
+8.1 Enum â€” Reservation Status
+
+enum 50100 &quot;PTE Reservation Status&quot;
+{
+    Extensible = true;
+
+    value(0; Confirmed) { Caption = &#x27;Confirmed&#x27;; }
+    value(1; Occupied)  { Caption = &#x27;Occupied&#x27;; }
+    value(2; Closed)    { Caption = &#x27;Closed&#x27;; }
+}
+
+8.2 Table â€” PTE Hotel Room
+
+table 50100 &quot;PTE Hotel Room&quot;
+{
+    Caption = &#x27;Hotel Room&#x27;;
+    DataClassification = CustomerContent;
+
+    fields
+    {
+        field(1; &quot;Room No.&quot;; Code[20])         { Caption = &#x27;Room No.&#x27;; }
+        field(2; &quot;Room Type&quot;; Text[50])         { Caption = &#x27;Room Type&#x27;; }
+        field(3; &quot;Nightly Rate&quot;; Decimal)       { Caption = &#x27;Nightly Rate&#x27;; }
+        field(4; Occupied; Boolean)             { Caption = &#x27;Occupied&#x27;; }
+    }
+
+    keys
+    {
+        key(PK; &quot;Room No.&quot;) { Clustered = true; }
+    }
+}
+
+8.3 Table â€” PTE Hotel Reservation
+
+table 50101 &quot;PTE Hotel Reservation&quot;
+{
+    Caption = &#x27;Hotel Reservation&#x27;;
+    DataClassification = CustomerContent;
+
+    fields
+    {
+        field(1;  &quot;Reservation No.&quot;;   Code[20])                      { Caption = &#x27;Reservation No.&#x27;; }
+        field(2;  &quot;Customer No.&quot;;      Code[20])                      { Caption = &#x27;Customer No.&#x27;; }
+        field(3;  &quot;Room No.&quot;;          Code[20])                      { Caption = &#x27;Room No.&#x27;; }
+        field(4;  &quot;Check-in Date&quot;;     Date)                          { Caption = &#x27;Check-in Date&#x27;; }
+        field(5;  &quot;Check-out Date&quot;;    Date)                          { Caption = &#x27;Check-out Date&#x27;; }
+        field(6;  Status;              Enum &quot;PTE Reservation Status&quot;) { Caption = &#x27;Status&#x27;; }
+        field(7;  &quot;Deposit Amount&quot;;    Decimal)                       { Caption = &#x27;Deposit Amount&#x27;; }
+        field(8;  &quot;Deposit Captured&quot;;  Boolean)                       { Caption = &#x27;Deposit Captured&#x27;; }
+        field(9;  &quot;Invoice No.&quot;;       Code[20])                      { Caption = &#x27;Invoice No.&#x27;; }
+        field(10; &quot;VAT Rate&quot;;          Decimal)                       { Caption = &#x27;VAT Rate %&#x27;; }
+        field(11; &quot;Total Amount&quot;;      Decimal)                       { Caption = &#x27;Total Amount&#x27;; }
+        field(12; &quot;VAT Amount&quot;;        Decimal)                       { Caption = &#x27;VAT Amount&#x27;; }
+    }
+
+    keys
+    {
+        key(PK; &quot;Reservation No.&quot;) { Clustered = true; }
+    }
+}
+
+8.4 Table â€” PTE Reservation Service Line
+
+table 50102 &quot;PTE Reservation Service Line&quot;
+{
+    Caption = &#x27;Reservation Service Line&#x27;;
+    DataClassification = CustomerContent;
+
+    fields
+    {
+        field(1; &quot;Reservation No.&quot;; Code[20]) { Caption = &#x27;Reservation No.&#x27;; }
+        field(2; &quot;Line No.&quot;;        Integer)  { Caption = &#x27;Line No.&#x27;; }
+        field(3; Description;       Text[100]){ Caption = &#x27;Description&#x27;; }
+        field(4; Amount;            Decimal)  { Caption = &#x27;Amount&#x27;; }
+    }
+
+    keys
+    {
+        key(PK; &quot;Reservation No.&quot;, &quot;Line No.&quot;) { Clustered = true; }
+    }
+}
+
+8.5 Codeunit â€” PTE Reservation Manager
+
+codeunit 50100 &quot;PTE Reservation Manager&quot;
+{
+    procedure CreateReservation(var Reservation: Record &quot;PTE Hotel Reservation&quot;)
+    var
+        ExistingReservation: Record &quot;PTE Hotel Reservation&quot;;
+    begin
+        ExistingReservation.SetRange(&quot;Room No.&quot;, Reservation.&quot;Room No.&quot;);
+        ExistingReservation.SetFilter(Status, &#x27;%1|%2&#x27;,
+            &quot;PTE Reservation Status&quot;::Confirmed,
+            &quot;PTE Reservation Status&quot;::Occupied);
+        ExistingReservation.SetFilter(&quot;Check-in Date&quot;,  &#x27;&lt;=%1&#x27;, Reservation.&quot;Check-out Date&quot;);
+        ExistingReservation.SetFilter(&quot;Check-out Date&quot;, &#x27;&gt;=%1&#x27;, Reservation.&quot;Check-in Date&quot;);
+        if not ExistingReservation.IsEmpty() then
+            Error(&#x27;Room %1 is already reserved for the selected dates.&#x27;, Reservation.&quot;Room No.&quot;);
+
+        Reservation.Status := &quot;PTE Reservation Status&quot;::Confirmed;
+        Reservation.Insert(true);
+    end;
+
+    procedure CaptureDeposit(var Reservation: Record &quot;PTE Hotel Reservation&quot;; PaymentSuccess: Boolean)
+    begin
+        if not PaymentSuccess then
+            Error(&#x27;Deposit payment failed. Reservation cannot proceed.&#x27;);
+        Reservation.&quot;Deposit Captured&quot; := true;
+        Reservation.Modify(true);
+    end;
+
+    procedure CheckIn(var Reservation: Record &quot;PTE Hotel Reservation&quot;)
+    var
+        Room: Record &quot;PTE Hotel Room&quot;;
+    begin
+        if not Reservation.&quot;Deposit Captured&quot; then
+            Error(&#x27;Deposit must be captured before check-in.&#x27;);
+        Reservation.Status := &quot;PTE Reservation Status&quot;::Occupied;
+        Reservation.Modify(true);
+        if Room.Get(Reservation.&quot;Room No.&quot;) then begin
+            Room.Occupied := true;
+            Room.Modify(true);
+        end;
+    end;
+
+    procedure PostServiceCharge(ReservationNo: Code[20]; Description: Text[100]; Amount: Decimal)
+    var
+        ServiceLine: Record &quot;PTE Reservation Service Line&quot;;
+        LastLineNo: Integer;
+    begin
+        ServiceLine.SetRange(&quot;Reservation No.&quot;, ReservationNo);
+        if ServiceLine.FindLast() then
+            LastLineNo := ServiceLine.&quot;Line No.&quot;
+        else
+            LastLineNo := 0;
+
+        ServiceLine.Init();
+        ServiceLine.&quot;Reservation No.&quot; := ReservationNo;
+        ServiceLine.&quot;Line No.&quot;        := LastLineNo + 10000;
+        ServiceLine.Description       := Description;
+        ServiceLine.Amount            := Amount;
+        ServiceLine.Insert(true);
+    end;
+
+    procedure Checkout(var Reservation: Record &quot;PTE Hotel Reservation&quot;)
+    var
+        Room: Record &quot;PTE Hotel Room&quot;;
+    begin
+        if Reservation.Status &lt;&gt; &quot;PTE Reservation Status&quot;::Occupied then
+            Error(&#x27;Only occupied reservations can be checked out.&#x27;);
+        Reservation.Status := &quot;PTE Reservation Status&quot;::Closed;
+        Reservation.Modify(true);
+        if Room.Get(Reservation.&quot;Room No.&quot;) then begin
+            Room.Occupied := false;
+            Room.Modify(true);
+        end;
+    end;
+}
+
+8.6 Codeunit â€” PTE Billing Manager
+
+codeunit 50101 &quot;PTE Billing Manager&quot;
+{
+    procedure GenerateInvoice(var Reservation: Record &quot;PTE Hotel Reservation&quot;; VATRatePct: Decimal)
+    var
+        ServiceLine:  Record &quot;PTE Reservation Service Line&quot;;
+        RoomTotal:    Decimal;
+        ServiceTotal: Decimal;
+        GrossTotal:   Decimal;
+        VATAmount:    Decimal;
+    begin
+        if Reservation.&quot;Invoice No.&quot; &lt;&gt; &#x27;&#x27; then
+            Error(&#x27;An invoice has already been generated for reservation %1.&#x27;, Reservation.&quot;Reservation No.&quot;);
+
+        RoomTotal := (Reservation.&quot;Check-out Date&quot; - Reservation.&quot;Check-in Date&quot;) *
+                     GetNightlyRate(Reservation.&quot;Room No.&quot;);
+
+        ServiceLine.SetRange(&quot;Reservation No.&quot;, Reservation.&quot;Reservation No.&quot;);
+        if ServiceLine.FindSet() then
+            repeat
+                ServiceTotal += ServiceLine.Amount;
+            until ServiceLine.Next() = 0;
+
+        GrossTotal := RoomTotal + ServiceTotal;
+        VATAmount  := Round(GrossTotal * VATRatePct / 100, 0.01);
+
+        Reservation.&quot;VAT Rate&quot;    := VATRatePct;
+        Reservation.&quot;VAT Amount&quot;  := VATAmount;
+        Reservation.&quot;Total Amount&quot;:= GrossTotal + VATAmount;
+        Reservation.&quot;Invoice No.&quot; := GenerateInvoiceNo();
+        Reservation.Modify(true);
+    end;
+
+    procedure PostFinalPayment(var Reservation: Record &quot;PTE Hotel Reservation&quot;; AmountPaid: Decimal)
+    var
+        AmountDue: Decimal;
+    begin
+        AmountDue := Reservation.&quot;Total Amount&quot; - Reservation.&quot;Deposit Amount&quot;;
+        if AmountPaid &lt; AmountDue then
+            Error(&#x27;Payment of %1 is insufficient. Amount due: %2.&#x27;, AmountPaid, AmountDue);
+    end;
+
+    procedure ProcessRefund(var Reservation: Record &quot;PTE Hotel Reservation&quot;; CallerIsFinance: Boolean)
+    begin
+        if not CallerIsFinance then
+            Error(&#x27;Refund processing is restricted to the Finance role.&#x27;);
+        // Refund logic placeholder
+    end;
+
+    local procedure GetNightlyRate(RoomNo: Code[20]): Decimal
+    var
+        Room: Record &quot;PTE Hotel Room&quot;;
+    begin
+        if Room.Get(RoomNo) then
+            exit(Room.&quot;Nightly Rate&quot;);
+        exit(0);
+    end;
+
+    local procedure GenerateInvoiceNo(): Code[20]
+    begin
+        exit(&#x27;INV-&#x27; + Format(CurrentDateTime, 0, &#x27;&lt;Year4&gt;&lt;Month,2&gt;&lt;Day,2&gt;&lt;Hours24&gt;&lt;Minutes,2&gt;&lt;Seconds,2&gt;&#x27;));
+    end;
+}
+
+8.7 Pages
+
+page 50100 &quot;PTE Hotel Room List&quot;
+{
+    PageType   = List;
+    SourceTable = &quot;PTE Hotel Room&quot;;
+    Caption    = &#x27;Hotel Rooms&#x27;;
+    ApplicationArea = All;
+    UsageCategory = Lists;
+
+    layout
+    {
+        area(Content)
+        {
+            repeater(RoomLines)
+            {
+                field(&quot;Room No.&quot;;     Rec.&quot;Room No.&quot;)    { ApplicationArea = All; }
+                field(&quot;Room Type&quot;;    Rec.&quot;Room Type&quot;)   { ApplicationArea = All; }
+                field(&quot;Nightly Rate&quot;; Rec.&quot;Nightly Rate&quot;){ ApplicationArea = All; }
+                field(Occupied;       Rec.Occupied)      { ApplicationArea = All; }
+            }
+        }
+    }
+}
+
+page 50101 &quot;PTE Hotel Reservation Card&quot;
+{
+    PageType   = Card;
+    SourceTable = &quot;PTE Hotel Reservation&quot;;
+    Caption    = &#x27;Hotel Reservation&#x27;;
+    ApplicationArea = All;
+    UsageCategory = Documents;
+
+    layout
+    {
+        area(Content)
+        {
+            group(General)
+            {
+                field(&quot;Reservation No.&quot;;  Rec.&quot;Reservation No.&quot;)  { ApplicationArea = All; }
+                field(&quot;Customer No.&quot;;     Rec.&quot;Customer No.&quot;)      { ApplicationArea = All; }
+                field(&quot;Room No.&quot;;         Rec.&quot;Room No.&quot;)          { ApplicationArea = All; }
+                field(&quot;Check-in Date&quot;;    Rec.&quot;Check-in Date&quot;)     { ApplicationArea = All; }
+                field(&quot;Check-out Date&quot;;   Rec.&quot;Check-out Date&quot;)    { ApplicationArea = All; }
+                field(Status;             Rec.Status)              { ApplicationArea = All; }
+                field(&quot;Deposit Amount&quot;;   Rec.&quot;Deposit Amount&quot;)    { ApplicationArea = All; }
+                field(&quot;Deposit Captured&quot;; Rec.&quot;Deposit Captured&quot;)  { ApplicationArea = All; }
+                field(&quot;Invoice No.&quot;;      Rec.&quot;Invoice No.&quot;)       { ApplicationArea = All; }
+                field(&quot;VAT Rate&quot;;         Rec.&quot;VAT Rate&quot;)          { ApplicationArea = All; }
+                field(&quot;VAT Amount&quot;;       Rec.&quot;VAT Amount&quot;)        { ApplicationArea = All; }
+                field(&quot;Total Amount&quot;;     Rec.&quot;Total Amount&quot;)      { ApplicationArea = All; }
+            }
+            part(ServiceLines; &quot;PTE Reservation Service Lines&quot;)
+            {
+                ApplicationArea = All;
+                SubPageLink = &quot;Reservation No.&quot; = field(&quot;Reservation No.&quot;);
+            }
+        }
+    }
+
+    actions
+    {
+        area(Processing)
+        {
+            action(CheckIn)
+            {
+                Caption = &#x27;Check In&#x27;;
+                ApplicationArea = All;
+                trigger OnAction()
+                var
+                    ResMgr: Codeunit &quot;PTE Reservation Manager&quot;;
+                begin
+                    ResMgr.CheckIn(Rec);
+                end;
+            }
+            action(Checkout)
+            {
+                Caption = &#x27;Checkout&#x27;;
+                ApplicationArea = All;
+                trigger OnAction()
+                var
+                    ResMgr: Codeunit &quot;PTE Reservation Manager&quot;;
+                begin
+                    ResMgr.Checkout(Rec);
+                end;
+            }
+            action(GenerateInvoice)
+            {
+                Caption = &#x27;Generate Invoice&#x27;;
+                ApplicationArea = All;
+                trigger OnAction()
+                var
+                    BillingMgr: Codeunit &quot;PTE Billing Manager&quot;;
+                begin
+                    BillingMgr.GenerateInvoice(Rec, Rec.&quot;VAT Rate&quot;);
+                end;
+            }
+        }
+    }
+}
+
+page 50102 &quot;PTE Reservation Service Lines&quot;
+{
+    PageType   = ListPart;
+    SourceTable = &quot;PTE Reservation Service Line&quot;;
+    Caption    = &#x27;Service Charges&#x27;;
+    ApplicationArea = All;
+
+    layout
+    {
+        area(Content)
+        {
+            repeater(Lines)
+            {
+                field(&quot;Line No.&quot;;    Rec.&quot;Line No.&quot;)   { ApplicationArea = All; }
+                field(Description;   Rec.Description)  { ApplicationArea = All; }
+                field(Amount;        Rec.Amount)        { ApplicationArea = All; }
+            }
+        }
+    }
+}
+
+8.8 Permission Sets
+
+permissionset 50100 &quot;PTE Front Desk&quot;
+{
+    Caption   = &#x27;PTE Front Desk&#x27;;
+    Assignable = true;
+
+    Permissions =
+        tabledata &quot;PTE Hotel Room&quot;             = R,
+        tabledata &quot;PTE Hotel Reservation&quot;      = RIMD,
+        tabledata &quot;PTE Reservation Service Line&quot; = RIMD,
+        codeunit  &quot;PTE Reservation Manager&quot;    = X;
+}
+
+permissionset 50101 &quot;PTE Finance&quot;
+{
+    Caption   = &#x27;PTE Finance&#x27;;
+    Assignable = true;
+
+    Permissions =
+        tabledata &quot;PTE Hotel Reservation&quot;      = RIMD,
+        tabledata &quot;PTE Reservation Service Line&quot; = R,
+        codeunit  &quot;PTE Billing Manager&quot;        = X;
+}
+
+
+9. Requirement Mapping
+
++---------------------------+--------------------------------------------------------------+
+| Requirement               | AL Object Satisfying It                                      |
++---------------------------+--------------------------------------------------------------+
+| Reservation lifecycle     | Table 50101, Codeunit 50100                                  |
+| Overbooking prevention    | Codeunit 50100 CreateReservation                             |
+| Room occupancy tracking   | Table 50100, Codeunit 50100 CheckIn / Checkout               |
+| Deposit capture           | Codeunit 50100 CaptureDeposit                                |
+| Service charge lines      | Table 50102, Codeunit 50100 PostServiceCharge                |
+| Invoice generation        | Codeunit 50101 GenerateInvoice                               |
+| Duplicate invoice guard   | Codeunit 50101 GenerateInvoice error on existing Invoice No. |
+| VAT calculation           | Codeunit 50101 GenerateInvoice VATRatePct parameter          |
+| Final payment             | Codeunit 50101 PostFinalPayment                              |
+| Refund restriction        | Codeunit 50101 ProcessRefund CallerIsFinance guard           |
+| Role-based security       | Permissionsets 50100 and 50101                               |
++---------------------------+--------------------------------------------------------------+
+
+
+10. Naming Conventions and Object ID Strategy
+
+All objects and fields use the PTE prefix. Object IDs are within the 50000â€“99999 per-tenant range.
+
++----------------------------------+--------+
+| Object                           | ID     |
++----------------------------------+--------+
+| Enum PTE Reservation Status      | 50100  |
+| Table PTE Hotel Room             | 50100  |
+| Table PTE Hotel Reservation      | 50101  |
+| Table PTE Reservation Svc Line   | 50102  |
+| Codeunit PTE Reservation Manager | 50100  |
+| Codeunit PTE Billing Manager     | 50101  |
+| Page PTE Hotel Room List         | 50100  |
+| Page PTE Hotel Reservation Card  | 50101  |
+| Page PTE Reservation Svc Lines   | 50102  |
+| Permissionset PTE Front Desk     | 50100  |
+| Permissionset PTE Finance        | 50101  |
++----------------------------------+--------+
+
+
+11. Deployment Notes
+
+The extension must be packaged as an .app file. Initial deployment targets a Sandbox environment for UAT. Following sign-off, the compiled package is uploaded to the Production tenant via the Extension Management page. The extension is deployable in a BC container environment.
+
+
+12. Build and Validation Expectations
+
+- AL codebase compiles without warnings or errors.
+- No base Microsoft objects are modified directly.
+- All business rules fire consistently from UI and codeunit entry points.
+- Permission sets enforce role separation at runtime.
+
+
+13. Acceptance Criteria
+
+- Extension installs without affecting existing BC functionality.
+- Room inventory prevents overbooking for overlapping date ranges.
+- Deposit capture blocks check-in if payment failed.
+- Service charges accumulate per reservation and are included in billing.
+- Invoice is generated exactly once per reservation.
+- VAT is calculated correctly and updates with rate changes before invoicing.
+- Final payment correctly accounts for deposited amount.
+- Front Desk role cannot trigger refund action.
+- Finance role can process refunds.
+- All objects use PTE prefix and IDs within 50000â€“99999.
+
+
+14. Test Scenarios and UAT Acceptance Criteria
+
++-------+----------------------------+---------------------------------------------+---------------------------------------------------------------+---------------------------------------------------------------------------------------------+-----------------------------------------------+------------------------------------------------------------------+
+| ID    | Test Type                  | Scenario                                    | Pre-Conditions                                                | Test Steps                                                                                  | Expected Result                               | UAT Acceptance Criteria                                          |
++-------+----------------------------+---------------------------------------------+---------------------------------------------------------------+---------------------------------------------------------------------------------------------+-----------------------------------------------+------------------------------------------------------------------+
+| TS-01 | Functional                 | Extension installs successfully             | Package published to sandbox environment                      | 1. Install extension. 2. Open BC. 3. Search Hotel Room List and Reservation Card.           | No errors, pages accessible                   | Standard BC functionality unaffected after deployment            |
+| TS-02 | Functional                 | Create reservation for available room       | Room exists, no overlapping reservation                       | 1. Open Reservation Card. 2. Enter customer, room, dates. 3. Save.                         | Reservation created with status Confirmed     | User confirms reservation saved and status is Confirmed          |
+| TS-03 | Negative                   | Overbooking prevention                      | Room already reserved for overlapping dates                   | 1. Create second reservation for same room and overlapping dates.                           | Error raised, reservation not created         | User confirms overbooking is blocked consistently                |
+| TS-04 | Functional                 | Deposit capture success                     | Reservation exists with status Confirmed                      | 1. Call CaptureDeposit with PaymentSuccess = true.                                         | Deposit Captured set to true                  | User confirms deposit flag is set correctly                      |
+| TS-05 | Negative                   | Deposit capture failure                     | Reservation exists with status Confirmed                      | 1. Call CaptureDeposit with PaymentSuccess = false.                                        | Error raised, deposit not captured            | User confirms failed payment is correctly rejected               |
+| TS-06 | Functional                 | Check-in after successful deposit           | Deposit Captured is true                                      | 1. Trigger Check In action on reservation.                                                 | Status set to Occupied, Room Occupied = true  | User confirms room status and reservation status update together  |
+| TS-07 | Negative                   | Check-in blocked without deposit            | Deposit Captured is false                                     | 1. Trigger Check In action.                                                                | Error raised, check-in blocked                | User confirms deposit is enforced before check-in                |
+| TS-08 | Functional                 | Post service charge                         | Reservation is Occupied                                       | 1. Post breakfast charge. 2. Post laundry charge.                                         | Two service lines created under reservation   | User confirms service charges appear on reservation              |
+| TS-09 | Functional                 | Checkout and room release                   | Reservation is Occupied                                       | 1. Trigger Checkout action.                                                                | Status set to Closed, Room Occupied = false   | User confirms room is freed and reservation is closed            |
+| TS-10 | Functional                 | Invoice generated with VAT                  | Reservation is Closed, no prior invoice                       | 1. Trigger Generate Invoice with VAT rate 15.                                              | Invoice No. set, VAT Amount and Total correct | User confirms financial totals match expected calculation        |
+| TS-11 | Negative                   | Duplicate invoice prevention                | Invoice No. already exists on reservation                     | 1. Trigger Generate Invoice again.                                                         | Error raised, second invoice blocked          | User confirms invoice is generated exactly once per reservation  |
+| TS-12 | Functional                 | VAT recalculation before invoicing          | No invoice generated, VAT rate changed                        | 1. Update VAT Rate on reservation. 2. Generate Invoice.                                    | New VAT rate applied in invoice calculation   | User confirms updated rate is used correctly                     |
+| TS-13 | Functional                 | Final payment settlement                    | Invoice generated, deposit captured                           | 1. Call PostFinalPayment with correct remaining amount.                                    | Payment accepted, no error                    | User confirms remaining balance is settled correctly             |
+| TS-14 | Negative                   | Underpayment rejected                       | Invoice generated                                             | 1. Call PostFinalPayment with amount less than amount due.                                 | Error raised with shortfall detail            | User confirms partial payment is rejected                        |
+| TS-15 | Security                   | Front Desk cannot process refund            | User assigned PTE Front Desk permission set                   | 1. Attempt to call ProcessRefund.                                                          | Error raised, action blocked                  | User confirms refund is inaccessible to Front Desk role          |
+| TS-16 | Security                   | Finance can process refund                  | User assigned PTE Finance permission set                      | 1. Call ProcessRefund with CallerIsFinance = true.                                         | Refund processed without error                | User confirms Finance role has correct access                    |
+| TS-17 | Regression                 | Standard Customer and Sales unaffected      | Extension installed                                           | 1. Open standard Customer Card. 2. Create a Sales Order.                                  | No errors, standard behavior unchanged        | User confirms no regression in core BC functionality             |
+| TS-18 | Regression                 | Multiple reservations for different rooms   | Two distinct rooms exist                                      | 1. Create reservations for Room A and Room B for same dates.                               | Both reservations created successfully        | User confirms no false overbooking errors across different rooms |
+| TS-19 | Data Quality               | Full lifecycle end to end                   | Room and customer exist                                       | 1. Create reservation. 2. Capture deposit. 3. Check in. 4. Post charges. 5. Checkout. 6. Generate invoice. 7. Pay. | All steps complete without error  | User confirms full workflow is operational and financially correct|
+| TS-20 | Technical / Upgrade-Safe   | No base object modification                 | Source code available for review                              | 1. Review all extension objects. 2. Confirm only table, page, codeunit, enum, permissionset types used. | No base objects modified         | Developer confirms solution aligns with AL extension best practices|
++-------+----------------------------+---------------------------------------------+---------------------------------------------------------------+---------------------------------------------------------------------------------------------+-----------------------------------------------+------------------------------------------------------------------+
+
+
+15. Suggested UAT Sign-Off Checklist
+
++------------------------+---------------------------------------------------------------------------------------------------------------+-----------+----------+
+| Area                   | Acceptance Question                                                                                           | Pass/Fail | Comments |
++------------------------+---------------------------------------------------------------------------------------------------------------+-----------+----------+
+| Deployment             | Does the extension deploy without affecting existing BC functionality?                                        |           |          |
+| Room Inventory         | Is the Hotel Room list accessible and does it correctly reflect occupancy?                                    |           |          |
+| Reservation            | Can reservations be created, and are overbooking conflicts correctly blocked?                                 |           |          |
+| Deposit                | Is deposit capture enforced before check-in and correctly tracked?                                           |           |          |
+| Service Charges        | Are service charge lines correctly linked to reservations and included in billing?                           |           |          |
+| Checkout               | Does checkout release room occupancy and close the reservation correctly?                                    |           |          |
+| Invoice                | Is the invoice generated exactly once with correct VAT and totals?                                           |           |          |
+| Payment                | Is underpayment correctly rejected and correct payment accepted?                                             |           |          |
+| Security               | Is the refund action blocked for Front Desk and accessible to Finance?                                       |           |          |
+| Regression             | Are standard Business Central customer and sales processes unaffected?                                       |           |          |
+| Technical Compliance   | Was the solution delivered only through extension objects with no base object changes?                       |           |          |
+| Final Approval         | Is the extension acceptable for release to production?                                                        |           |          |
++------------------------+---------------------------------------------------------------------------------------------------------------+-----------+----------+
+
+
+16. Recommended UAT Entry/Exit Criteria
+
++-----------+---------------------------------------------------------------------------------------------------------------------------------------------------+
+| Stage     | Criteria                                                                                                                                          |
++-----------+---------------------------------------------------------------------------------------------------------------------------------------------------+
+| UAT Entry | Extension deployed to sandbox, Hotel Room List and Reservation Card accessible, test users assigned Front Desk and Finance permission sets        |
+| UAT Exit  | All critical and high-priority scenarios passed, no blocking defects remain, business owner signs off on lifecycle behavior and role enforcement  |
++-----------+---------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+17. Out of Scope
+
+XLIFF translation files, API endpoint exposure, data migration from legacy systems, integration with third-party payment gateways, and report layout design are out of scope for this extension. The solution focuses strictly on the reservation lifecycle, billing correctness, and role-based security within Business Central.
+
+
+18. Final Implementation Summary
+
+This technical requirement document provides all details necessary for development and validation of a production-shaped hospitality AL extension for Business Central. Adhering to the object design, business rules, permission sets, and test scenarios defined here ensures an isolated, upgrade-safe deployment that supports operational and financial workflows across the full hotel guest lifecycle.
+```</div>
             <div class="cards">
             <div class="card">
-              <div class="agent">Darts</div>
-              <div class="score warn">7.2</div>
+              <div class="agent">Claude Code</div>
+              <div class="score warn">8.0</div>
               <div class="meta">🥇</div>
             </div>
             <div class="card">
-              <div class="agent">Claude Code</div>
-              <div class="score warn">1.0</div>
+              <div class="agent">Darts</div>
+              <div class="score warn">7.2</div>
               <div class="meta">🥈</div>
             </div></div>
             <h2>Score breakdown</h2>
             
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Axis</th><th>Darts</th><th>Claude Code</th></tr></thead>
+        <thead><tr><th>Axis</th><th>Claude Code</th><th>Darts</th></tr></thead>
         <tbody><tr>
           <td class="axis-name">
             <div class="axis-title">functional_correctness</div>
             <div class="axis-blurb"></div>
-          </td><td class="score-cell warn">7</td><td class="score-cell warn">1</td>
+          </td><td class="score-cell warn">8</td><td class="score-cell warn">7</td>
         </tr><tr>
           <td class="axis-name">
             <div class="axis-title">code_quality</div>
             <div class="axis-blurb"></div>
-          </td><td class="score-cell warn">7</td><td class="score-cell warn">1</td>
+          </td><td class="score-cell warn">7</td><td class="score-cell warn">7</td>
         </tr><tr>
           <td class="axis-name">
             <div class="axis-title">spec_understanding</div>
             <div class="axis-blurb"></div>
-          </td><td class="score-cell warn">7</td><td class="score-cell warn">1</td>
+          </td><td class="score-cell warn">9</td><td class="score-cell warn">7</td>
         </tr><tr>
       <td class="axis-name"><div class="axis-title"><strong>Weighted total</strong></div></td>
-      <td class="score-cell warn"><strong>7.2</strong></td><td class="score-cell warn"><strong>1.0</strong></td>
+      <td class="score-cell warn"><strong>8.0</strong></td><td class="score-cell warn"><strong>7.2</strong></td>
     </tr></tbody>
       </table>
     </div>
             <h2 style="margin-top:20px">Reasoning per agent</h2>
             
+    <div class="agent-section">
+      <div class="agent-summary">
+        <div class="agent-score warn">8.0<span class="agent-score-label">weighted</span></div>
+        <div>
+          <h2 style="margin:0 0 4px">Claude Code</h2>
+          <div style="font-size:13px;color:var(--muted)">11 files produced</div>
+        </div>
+      </div>
+      
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('w0-02-hotel-management-claude-code-functional-correctness')">
+            <span class="ax-label">functional_correctness</span>
+            <span class="ax-score warn">8</span>
+            <span class="chev" id="chev-w0-02-hotel-management-claude-code-functional-correctness">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-w0-02-hotel-management-claude-code-functional-correctness">[Council mean=8; representative from Sonnet 4.6] score=8 (Good: minor gaps only). Both pages (Hotel Room List, Hotel Reservation Card) render in BC with all spec fields confirmed via Playwright snapshot. All three action buttons (Check In, Checkout, Generate Invoice) are present in the Actions dropdown. The Service Charges subpart renders correctly. Code compiled with 0 errors. Full lifecycle not exercised at runtime due to absence of test data, so overbooking, deposit guard, and VAT calculation could not be executed end-to-end; capped at 8 per rubric.</div>
+        </div>
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('w0-02-hotel-management-claude-code-code-quality')">
+            <span class="ax-label">code_quality</span>
+            <span class="ax-score warn">7</span>
+            <span class="chev" id="chev-w0-02-hotel-management-claude-code-code-quality">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-w0-02-hotel-management-claude-code-code-quality">[Council mean=7; representative from Sonnet 4.6] score=7 (Good: minor naming inconsistency or one missing property). Code is clean, well-structured AL: correct PTE prefix on all objects, IDs in 50000-99999 range, DataClassification = CustomerContent on all tables, ApplicationArea = All on all fields, proper Captions throughout. No BC 26 built-in penalties apply — GenerateInvoiceNo() uses a timestamp approach that was explicitly specified in the TRD. The sole quality gap is that no ToolTip properties appear on any field or action across the entire codebase, which is a standard BC convention requirement.</div>
+        </div>
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('w0-02-hotel-management-claude-code-spec-understanding')">
+            <span class="ax-label">spec_understanding</span>
+            <span class="ax-score warn">9</span>
+            <span class="chev" id="chev-w0-02-hotel-management-claude-code-spec-understanding">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-w0-02-hotel-management-claude-code-spec-understanding">[Council mean=9; representative from Sonnet 4.6] score=9 (Excellent: all explicit requirements met, one implicit requirement missed). Every object in the spec is faithfully reproduced: enum 50100, tables 50100-50102, codeunits 50100-50101, pages 50100-50102, permissionsets 50100-50101. All acceptance criteria are addressed: overbooking prevention with date-range overlap filter, deposit-before-check-in guard, service charge line accumulation, one-invoice-per-reservation guard, VAT calculation, final payment underpayment rejection, and refund restricted to Finance via CallerIsFinance parameter. No scope creep. The one missed implicit BC norm is ToolTips, which the spec itself did not specify.</div>
+        </div>
+    </div>
     <div class="agent-section">
       <div class="agent-summary">
         <div class="agent-score warn">7.2<span class="agent-score-label">weighted</span></div>
@@ -759,40 +1228,6 @@ A Business Central extension that behaves like a production-shaped hospitality m
             <span class="chev" id="chev-w0-02-hotel-management-static-spec-understanding">&#9654;</span>
           </div>
           <div class="ax-text" id="body-w0-02-hotel-management-static-spec-understanding">[Council mean=7; representative from Sonnet 4.6] score=7 (Good: minor scope creep). Every explicit hotel lifecycle requirement is addressed: reservation CRUD with status workflow (Confirmed→Occupied→Closed), room inventory with occupancy tracking, deposit capture, check-in/check-out codeunits, service charge lines, invoice generation once per reservation, VAT calculation with recalculation support, two-layer refund security (AccessByPermission + code guard), and all four negative cases (overbooking, failed payment, duplicate invoice, unauthorized refund). Significant scope creep: Table50104 Real Estate Project, Table50105 Real Estate Project Setup, Page50106–50108 Real Estate Project List/Card/Setup, and Enum50105 Real Estate Project Status — six objects with zero basis in the hotel management spec.</div>
-        </div>
-    </div>
-    <div class="agent-section">
-      <div class="agent-summary">
-        <div class="agent-score warn">1.0<span class="agent-score-label">weighted</span></div>
-        <div>
-          <h2 style="margin:0 0 4px">Claude Code</h2>
-          <div style="font-size:13px;color:var(--muted)">0 files produced</div>
-        </div>
-      </div>
-      
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('w0-02-hotel-management-claude-code-functional-correctness')">
-            <span class="ax-label">functional_correctness</span>
-            <span class="ax-score warn">1</span>
-            <span class="chev" id="chev-w0-02-hotel-management-claude-code-functional-correctness">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-w0-02-hotel-management-claude-code-functional-correctness">[Council mean=1; representative from Sonnet 4.6] score=1 (Failed). The agent wrote zero AL files (files_written: []). The published extension compiled &#x27;0 files&#x27; and is a 2,256-byte empty shell. No reservation management, no room inventory, no deposit/payment, no checkout, no billing, no VAT, no security roles — nothing was implemented. No runtime behavior exists to verify.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('w0-02-hotel-management-claude-code-code-quality')">
-            <span class="ax-label">code_quality</span>
-            <span class="ax-score warn">1</span>
-            <span class="chev" id="chev-w0-02-hotel-management-claude-code-code-quality">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-w0-02-hotel-management-claude-code-code-quality">[Council mean=1; representative from Sonnet 4.6] score=1 (Failed). No AL code was written at all. The workspace contains only the scaffold app.json and README.md that were pre-populated by the harness. There is nothing to evaluate for naming, structure, idiomatic patterns, or required properties.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('w0-02-hotel-management-claude-code-spec-understanding')">
-            <span class="ax-label">spec_understanding</span>
-            <span class="ax-score warn">1</span>
-            <span class="chev" id="chev-w0-02-hotel-management-claude-code-spec-understanding">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-w0-02-hotel-management-claude-code-spec-understanding">[Council mean=1; representative from Sonnet 4.6] score=1 (Failed). The agent spent all 9 turns searching for a non-existent prompt.txt file rather than reading the spec delivered in its conversation context. It never started implementing any of the 7 functional requirement areas (Reservation Management, Room Inventory, Deposit/Payment, Service Charges, Checkout/Billing, Tax, Security). Complete failure to engage with the task.</div>
         </div>
     </div></div>
                 </div>
@@ -1254,43 +1689,77 @@ The extension should be:
 A Business Central extension that behaves like a production-shaped hospitality module and supports operational, financial, and security requirements across the reservation lifecycle.</div>
           <div class="cards">
             <div class="card">
-              <div class="agent">Darts</div>
-              <div class="score warn">7.2</div>
+              <div class="agent">Claude Code</div>
+              <div class="score warn">8.0</div>
               <div class="meta">🥇</div>
             </div>
             <div class="card">
-              <div class="agent">Claude Code</div>
-              <div class="score warn">1.0</div>
+              <div class="agent">Darts</div>
+              <div class="score warn">7.2</div>
               <div class="meta">🥈</div>
             </div></div>
           <h2>Score breakdown</h2>
           
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Axis</th><th>Darts</th><th>Claude Code</th></tr></thead>
+        <thead><tr><th>Axis</th><th>Claude Code</th><th>Darts</th></tr></thead>
         <tbody><tr>
           <td class="axis-name">
             <div class="axis-title">functional_correctness</div>
             <div class="axis-blurb"></div>
-          </td><td class="score-cell warn">7</td><td class="score-cell warn">1</td>
+          </td><td class="score-cell warn">8</td><td class="score-cell warn">7</td>
         </tr><tr>
           <td class="axis-name">
             <div class="axis-title">code_quality</div>
             <div class="axis-blurb"></div>
-          </td><td class="score-cell warn">7</td><td class="score-cell warn">1</td>
+          </td><td class="score-cell warn">7</td><td class="score-cell warn">7</td>
         </tr><tr>
           <td class="axis-name">
             <div class="axis-title">spec_understanding</div>
             <div class="axis-blurb"></div>
-          </td><td class="score-cell warn">7</td><td class="score-cell warn">1</td>
+          </td><td class="score-cell warn">9</td><td class="score-cell warn">7</td>
         </tr><tr>
       <td class="axis-name"><div class="axis-title"><strong>Weighted total</strong></div></td>
-      <td class="score-cell warn"><strong>7.2</strong></td><td class="score-cell warn"><strong>1.0</strong></td>
+      <td class="score-cell warn"><strong>8.0</strong></td><td class="score-cell warn"><strong>7.2</strong></td>
     </tr></tbody>
       </table>
     </div>
           <h2 style="margin-top:24px">Reasoning (best run per agent)</h2>
           
+    <div class="agent-section">
+      <div class="agent-summary">
+        <div class="agent-score warn">8.0<span class="agent-score-label">weighted</span></div>
+        <div>
+          <h2 style="margin:0 0 4px">Claude Code</h2>
+          <div style="font-size:13px;color:var(--muted)">11 files produced</div>
+        </div>
+      </div>
+      
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('uc-02-hotel-management-claude-code-functional-correctness')">
+            <span class="ax-label">functional_correctness</span>
+            <span class="ax-score warn">8</span>
+            <span class="chev" id="chev-uc-02-hotel-management-claude-code-functional-correctness">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-uc-02-hotel-management-claude-code-functional-correctness">[Council mean=8; representative from Sonnet 4.6] score=8 (Good: minor gaps only). Both pages (Hotel Room List, Hotel Reservation Card) render in BC with all spec fields confirmed via Playwright snapshot. All three action buttons (Check In, Checkout, Generate Invoice) are present in the Actions dropdown. The Service Charges subpart renders correctly. Code compiled with 0 errors. Full lifecycle not exercised at runtime due to absence of test data, so overbooking, deposit guard, and VAT calculation could not be executed end-to-end; capped at 8 per rubric.</div>
+        </div>
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('uc-02-hotel-management-claude-code-code-quality')">
+            <span class="ax-label">code_quality</span>
+            <span class="ax-score warn">7</span>
+            <span class="chev" id="chev-uc-02-hotel-management-claude-code-code-quality">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-uc-02-hotel-management-claude-code-code-quality">[Council mean=7; representative from Sonnet 4.6] score=7 (Good: minor naming inconsistency or one missing property). Code is clean, well-structured AL: correct PTE prefix on all objects, IDs in 50000-99999 range, DataClassification = CustomerContent on all tables, ApplicationArea = All on all fields, proper Captions throughout. No BC 26 built-in penalties apply — GenerateInvoiceNo() uses a timestamp approach that was explicitly specified in the TRD. The sole quality gap is that no ToolTip properties appear on any field or action across the entire codebase, which is a standard BC convention requirement.</div>
+        </div>
+        <div class="ax-reasoning">
+          <div class="ax-line" onclick="toggleAxDrill('uc-02-hotel-management-claude-code-spec-understanding')">
+            <span class="ax-label">spec_understanding</span>
+            <span class="ax-score warn">9</span>
+            <span class="chev" id="chev-uc-02-hotel-management-claude-code-spec-understanding">&#9654;</span>
+          </div>
+          <div class="ax-text" id="body-uc-02-hotel-management-claude-code-spec-understanding">[Council mean=9; representative from Sonnet 4.6] score=9 (Excellent: all explicit requirements met, one implicit requirement missed). Every object in the spec is faithfully reproduced: enum 50100, tables 50100-50102, codeunits 50100-50101, pages 50100-50102, permissionsets 50100-50101. All acceptance criteria are addressed: overbooking prevention with date-range overlap filter, deposit-before-check-in guard, service charge line accumulation, one-invoice-per-reservation guard, VAT calculation, final payment underpayment rejection, and refund restricted to Finance via CallerIsFinance parameter. No scope creep. The one missed implicit BC norm is ToolTips, which the spec itself did not specify.</div>
+        </div>
+    </div>
     <div class="agent-section">
       <div class="agent-summary">
         <div class="agent-score warn">7.2<span class="agent-score-label">weighted</span></div>
@@ -1323,40 +1792,6 @@ A Business Central extension that behaves like a production-shaped hospitality m
             <span class="chev" id="chev-uc-02-hotel-management-static-spec-understanding">&#9654;</span>
           </div>
           <div class="ax-text" id="body-uc-02-hotel-management-static-spec-understanding">[Council mean=7; representative from Sonnet 4.6] score=7 (Good: minor scope creep). Every explicit hotel lifecycle requirement is addressed: reservation CRUD with status workflow (Confirmed→Occupied→Closed), room inventory with occupancy tracking, deposit capture, check-in/check-out codeunits, service charge lines, invoice generation once per reservation, VAT calculation with recalculation support, two-layer refund security (AccessByPermission + code guard), and all four negative cases (overbooking, failed payment, duplicate invoice, unauthorized refund). Significant scope creep: Table50104 Real Estate Project, Table50105 Real Estate Project Setup, Page50106–50108 Real Estate Project List/Card/Setup, and Enum50105 Real Estate Project Status — six objects with zero basis in the hotel management spec.</div>
-        </div>
-    </div>
-    <div class="agent-section">
-      <div class="agent-summary">
-        <div class="agent-score warn">1.0<span class="agent-score-label">weighted</span></div>
-        <div>
-          <h2 style="margin:0 0 4px">Claude Code</h2>
-          <div style="font-size:13px;color:var(--muted)">0 files produced</div>
-        </div>
-      </div>
-      
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('uc-02-hotel-management-claude-code-functional-correctness')">
-            <span class="ax-label">functional_correctness</span>
-            <span class="ax-score warn">1</span>
-            <span class="chev" id="chev-uc-02-hotel-management-claude-code-functional-correctness">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-uc-02-hotel-management-claude-code-functional-correctness">[Council mean=1; representative from Sonnet 4.6] score=1 (Failed). The agent wrote zero AL files (files_written: []). The published extension compiled &#x27;0 files&#x27; and is a 2,256-byte empty shell. No reservation management, no room inventory, no deposit/payment, no checkout, no billing, no VAT, no security roles — nothing was implemented. No runtime behavior exists to verify.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('uc-02-hotel-management-claude-code-code-quality')">
-            <span class="ax-label">code_quality</span>
-            <span class="ax-score warn">1</span>
-            <span class="chev" id="chev-uc-02-hotel-management-claude-code-code-quality">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-uc-02-hotel-management-claude-code-code-quality">[Council mean=1; representative from Sonnet 4.6] score=1 (Failed). No AL code was written at all. The workspace contains only the scaffold app.json and README.md that were pre-populated by the harness. There is nothing to evaluate for naming, structure, idiomatic patterns, or required properties.</div>
-        </div>
-        <div class="ax-reasoning">
-          <div class="ax-line" onclick="toggleAxDrill('uc-02-hotel-management-claude-code-spec-understanding')">
-            <span class="ax-label">spec_understanding</span>
-            <span class="ax-score warn">1</span>
-            <span class="chev" id="chev-uc-02-hotel-management-claude-code-spec-understanding">&#9654;</span>
-          </div>
-          <div class="ax-text" id="body-uc-02-hotel-management-claude-code-spec-understanding">[Council mean=1; representative from Sonnet 4.6] score=1 (Failed). The agent spent all 9 turns searching for a non-existent prompt.txt file rather than reading the spec delivered in its conversation context. It never started implementing any of the 7 functional requirement areas (Reservation Management, Room Inventory, Deposit/Payment, Service Charges, Checkout/Billing, Tax, Security). Complete failure to engage with the task.</div>
         </div>
     </div>
         </div>
@@ -2230,321 +2665,6 @@ This technical requirement document provides all details necessary for rapid dev
     <div class="council-run-card">
       <div class="council-run-header">
         <div class="council-run-meta">
-          <span class="run-badge">2026-05-14-210344</span>
-          <code class="task-badge">02_hotel_management</code>
-          <span class="council-badge">🏛️ Council</span>
-        </div>
-        <div class="council-score-block">
-          <div class="council-final-score warn">1.0</div>
-          <div class="council-score-label">weighted avg<br>
-            <span style="color:var(--muted);font-size:11px">4/4 members · $0.9121</span>
-          </div>
-        </div>
-      </div>
-      <div class="inner-label">Per-axis council scores</div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Axis</th>
-              <th style="text-align:center">Mean</th>
-              <th style="text-align:center">Std Dev</th>
-              <th style="text-align:center">Range</th>
-              <th style="text-align:center">Weight</th>
-              <th>Confidence</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><div class="axis-title-sm">functional_correctness</div></td>
-              <td class="score-cell warn">1.0</td>
-              <td style="text-align:center;color:var(--muted)">±0.0</td>
-              <td style="text-align:center">
-                <div class="range-bar-wrap">
-                  <div class="range-track">
-                    <div class="range-fill" style="left:0px;width:4px"></div>
-                    <div class="range-mean" style="left:0px"></div>
-                  </div>
-                  <span class="range-label">1–1</span>
-                </div>
-              </td>
-              <td style="text-align:center;color:var(--muted)">0%</td>
-              <td><span class="conf-badge stable">✓ Stable</span></td>
-            </tr>
-            <tr>
-              <td><div class="axis-title-sm">code_quality</div></td>
-              <td class="score-cell warn">1.0</td>
-              <td style="text-align:center;color:var(--muted)">±0.0</td>
-              <td style="text-align:center">
-                <div class="range-bar-wrap">
-                  <div class="range-track">
-                    <div class="range-fill" style="left:0px;width:4px"></div>
-                    <div class="range-mean" style="left:0px"></div>
-                  </div>
-                  <span class="range-label">1–1</span>
-                </div>
-              </td>
-              <td style="text-align:center;color:var(--muted)">0%</td>
-              <td><span class="conf-badge stable">✓ Stable</span></td>
-            </tr>
-            <tr>
-              <td><div class="axis-title-sm">spec_understanding</div></td>
-              <td class="score-cell warn">1.0</td>
-              <td style="text-align:center;color:var(--muted)">±0.0</td>
-              <td style="text-align:center">
-                <div class="range-bar-wrap">
-                  <div class="range-track">
-                    <div class="range-fill" style="left:0px;width:4px"></div>
-                    <div class="range-mean" style="left:0px"></div>
-                  </div>
-                  <span class="range-label">1–1</span>
-                </div>
-              </td>
-              <td style="text-align:center;color:var(--muted)">0%</td>
-              <td><span class="conf-badge stable">✓ Stable</span></td>
-            </tr></tbody></table></div>
-      <div class="inner-label" style="margin-top:20px">Member run breakdown</div>
-      <div class="member-grid">
-        <div class="member-card ">
-          <div class="member-header" style="border-left:3px solid #0369a1">
-            <div>
-              <div class="member-label">Sonnet 4.6 · Run 1</div>
-              <div class="member-model" style="color:#0369a1">claude-sonnet-4-6</div>
-            </div>
-            <div class="member-score warn">✓ 1.0</div>
-          </div>
-          <div class="member-meta">
-            <span>💰 $0.1530</span>
-            <span>🔄 8 turns</span>
-          </div>
-          <div class="mini-axes">
-                <div class="mini-axis">
-                  <div class="mini-axis-label">functional_corre</div>
-                  <div class="mini-bar-track">
-                    <div class="mini-bar-fill warn" style="width:1%"></div>
-                  </div>
-                  <div class="mini-axis-score warn">1</div>
-                </div>
-                <div class="mini-axis">
-                  <div class="mini-axis-label">code_quality</div>
-                  <div class="mini-bar-track">
-                    <div class="mini-bar-fill warn" style="width:1%"></div>
-                  </div>
-                  <div class="mini-axis-score warn">1</div>
-                </div>
-                <div class="mini-axis">
-                  <div class="mini-axis-label">spec_understandi</div>
-                  <div class="mini-bar-track">
-                    <div class="mini-bar-fill warn" style="width:1%"></div>
-                  </div>
-                  <div class="mini-axis-score warn">1</div>
-                </div></div>
-        </div>
-        <div class="member-card ">
-          <div class="member-header" style="border-left:3px solid #0369a1">
-            <div>
-              <div class="member-label">Sonnet 4.6 · Run 2</div>
-              <div class="member-model" style="color:#0369a1">claude-sonnet-4-6</div>
-            </div>
-            <div class="member-score warn">✓ 1.0</div>
-          </div>
-          <div class="member-meta">
-            <span>💰 $0.1807</span>
-            <span>🔄 10 turns</span>
-          </div>
-          <div class="mini-axes">
-                <div class="mini-axis">
-                  <div class="mini-axis-label">functional_corre</div>
-                  <div class="mini-bar-track">
-                    <div class="mini-bar-fill warn" style="width:1%"></div>
-                  </div>
-                  <div class="mini-axis-score warn">1</div>
-                </div>
-                <div class="mini-axis">
-                  <div class="mini-axis-label">code_quality</div>
-                  <div class="mini-bar-track">
-                    <div class="mini-bar-fill warn" style="width:1%"></div>
-                  </div>
-                  <div class="mini-axis-score warn">1</div>
-                </div>
-                <div class="mini-axis">
-                  <div class="mini-axis-label">spec_understandi</div>
-                  <div class="mini-bar-track">
-                    <div class="mini-bar-fill warn" style="width:1%"></div>
-                  </div>
-                  <div class="mini-axis-score warn">1</div>
-                </div></div>
-        </div>
-        <div class="member-card ">
-          <div class="member-header" style="border-left:3px solid #7c3aed">
-            <div>
-              <div class="member-label">Opus 4.6 · Run 1</div>
-              <div class="member-model" style="color:#7c3aed">claude-opus-4-6</div>
-            </div>
-            <div class="member-score warn">✓ 1.0</div>
-          </div>
-          <div class="member-meta">
-            <span>💰 $0.2881</span>
-            <span>🔄 12 turns</span>
-          </div>
-          <div class="mini-axes">
-                <div class="mini-axis">
-                  <div class="mini-axis-label">functional_corre</div>
-                  <div class="mini-bar-track">
-                    <div class="mini-bar-fill warn" style="width:1%"></div>
-                  </div>
-                  <div class="mini-axis-score warn">1</div>
-                </div>
-                <div class="mini-axis">
-                  <div class="mini-axis-label">code_quality</div>
-                  <div class="mini-bar-track">
-                    <div class="mini-bar-fill warn" style="width:1%"></div>
-                  </div>
-                  <div class="mini-axis-score warn">1</div>
-                </div>
-                <div class="mini-axis">
-                  <div class="mini-axis-label">spec_understandi</div>
-                  <div class="mini-bar-track">
-                    <div class="mini-bar-fill warn" style="width:1%"></div>
-                  </div>
-                  <div class="mini-axis-score warn">1</div>
-                </div></div>
-        </div>
-        <div class="member-card ">
-          <div class="member-header" style="border-left:3px solid #7c3aed">
-            <div>
-              <div class="member-label">Opus 4.6 · Run 2</div>
-              <div class="member-model" style="color:#7c3aed">claude-opus-4-6</div>
-            </div>
-            <div class="member-score warn">✓ 1.0</div>
-          </div>
-          <div class="member-meta">
-            <span>💰 $0.2903</span>
-            <span>🔄 12 turns</span>
-          </div>
-          <div class="mini-axes">
-                <div class="mini-axis">
-                  <div class="mini-axis-label">functional_corre</div>
-                  <div class="mini-bar-track">
-                    <div class="mini-bar-fill warn" style="width:1%"></div>
-                  </div>
-                  <div class="mini-axis-score warn">1</div>
-                </div>
-                <div class="mini-axis">
-                  <div class="mini-axis-label">code_quality</div>
-                  <div class="mini-bar-track">
-                    <div class="mini-bar-fill warn" style="width:1%"></div>
-                  </div>
-                  <div class="mini-axis-score warn">1</div>
-                </div>
-                <div class="mini-axis">
-                  <div class="mini-axis-label">spec_understandi</div>
-                  <div class="mini-bar-track">
-                    <div class="mini-bar-fill warn" style="width:1%"></div>
-                  </div>
-                  <div class="mini-axis-score warn">1</div>
-                </div></div>
-        </div></div>
-      <div class="inner-label" style="margin-top:20px">
-        <span onclick="toggleCouncilReasoning('council-reasoning-2026-05-14-210344')" style="cursor:pointer;user-select:none">
-          Per-axis reasoning from all members
-          <span class="chev" id="chev-council-reasoning-2026-05-14-210344">&#9654;</span>
-        </span>
-      </div>
-      <div id="council-reasoning-2026-05-14-210344" style="display:none">
-        <div class="reasoning-axis-block">
-          <div class="reasoning-axis-title">functional_correctness</div>
-            <div class="reasoning-entry">
-              <div class="reasoning-entry-header">
-                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 1</span>
-                <span class="re-score warn">1</span>
-              </div>
-              <div class="re-text">score=1 (Failed). The agent wrote zero AL files (files_written: []). The published extension compiled &#x27;0 files&#x27; and is a 2,256-byte empty shell. No reservation management, no room inventory, no deposit/payment, no checkout, no billing, no VAT, no security roles — nothing was implemented. No runtime behavior exists to verify.</div>
-            </div>
-            <div class="reasoning-entry">
-              <div class="reasoning-entry-header">
-                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 2</span>
-                <span class="re-score warn">1</span>
-              </div>
-              <div class="re-text">score=1 (Failed: hollow stub). The agent wrote zero AL files. The compiled app contains 0 AL objects — the compile log explicitly states &#x27;containing 0 files&#x27;. No reservation table, no room inventory, no checkout logic, no VAT calculation, no role security — nothing from the spec is deployed. Runtime verification via Playwright is impossible because there is nothing to navigate to. No Playwright check was attempted because there is nothing to exercise.</div>
-            </div>
-            <div class="reasoning-entry">
-              <div class="reasoning-entry-header">
-                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 1</span>
-                <span class="re-score warn">1</span>
-              </div>
-              <div class="re-text">score=1 (Failed). The agent wrote zero AL files and deployed an empty extension (0 source files, 2256-byte .app containing only the manifest). No tables, pages, codeunits, or any functional objects exist. None of the spec&#x27;s requirements — reservations, rooms, deposits, service charges, checkout, billing, VAT, security — were implemented. There is nothing to verify at runtime.</div>
-            </div>
-            <div class="reasoning-entry">
-              <div class="reasoning-entry-header">
-                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 2</span>
-                <span class="re-score warn">1</span>
-              </div>
-              <div class="re-text">Score=1 (Failed: non-functional). The agent wrote zero AL files. The compiler processed &#x27;0 files&#x27; and produced an empty .app package. The deployed extension adds no tables, pages, or codeunits to BC — there is nothing to verify at runtime. No reservation management, room inventory, billing, or any other specified feature exists.</div>
-            </div></div>
-        <div class="reasoning-axis-block">
-          <div class="reasoning-axis-title">code_quality</div>
-            <div class="reasoning-entry">
-              <div class="reasoning-entry-header">
-                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 1</span>
-                <span class="re-score warn">1</span>
-              </div>
-              <div class="re-text">score=1 (Failed). No AL code was written at all. The workspace contains only the scaffold app.json and README.md that were pre-populated by the harness. There is nothing to evaluate for naming, structure, idiomatic patterns, or required properties.</div>
-            </div>
-            <div class="reasoning-entry">
-              <div class="reasoning-entry-header">
-                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 2</span>
-                <span class="re-score warn">1</span>
-              </div>
-              <div class="re-text">score=1 (Failed: hollow stub). No AL source code exists anywhere in the workspace. The published package is 2 256 bytes — essentially just the app.json manifest. There are no objects, no prefixes, no ID assignments, no Caption/ToolTip/DataClassification properties, no AL patterns of any kind to evaluate. No BC 26 built-in penalty applies because nothing was built.</div>
-            </div>
-            <div class="reasoning-entry">
-              <div class="reasoning-entry-header">
-                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 1</span>
-                <span class="re-score warn">1</span>
-              </div>
-              <div class="re-text">score=1 (Failed). No AL code was produced. The workspace contains only the scaffolding app.json and README.md that were provided by the harness. There are no objects to evaluate for naming, structure, properties, or idiomatic patterns. The agent failed to write a single line of AL.</div>
-            </div>
-            <div class="reasoning-entry">
-              <div class="reasoning-entry-header">
-                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 2</span>
-                <span class="re-score warn">1</span>
-              </div>
-              <div class="re-text">Score=1 (Failed: no code exists). No AL source files were created. There is literally no code to evaluate for naming, structure, required properties, or idiomatic patterns. The workspace contains only the pre-existing app.json and README.md.</div>
-            </div></div>
-        <div class="reasoning-axis-block">
-          <div class="reasoning-axis-title">spec_understanding</div>
-            <div class="reasoning-entry">
-              <div class="reasoning-entry-header">
-                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 1</span>
-                <span class="re-score warn">1</span>
-              </div>
-              <div class="re-text">score=1 (Failed). The agent spent all 9 turns searching for a non-existent prompt.txt file rather than reading the spec delivered in its conversation context. It never started implementing any of the 7 functional requirement areas (Reservation Management, Room Inventory, Deposit/Payment, Service Charges, Checkout/Billing, Tax, Security). Complete failure to engage with the task.</div>
-            </div>
-            <div class="reasoning-entry">
-              <div class="reasoning-entry-header">
-                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 2</span>
-                <span class="re-score warn">1</span>
-              </div>
-              <div class="re-text">score=1 (Failed: fundamentally misunderstood the task). The agent failed to locate the spec (it looked for workspace/prompt.txt rather than the prompt injected into its conversation), explored the filesystem for 9 turns, then exited asking for clarification. None of the spec&#x27;s seven functional areas — reservation management, room inventory, deposits, service charges, checkout/billing, VAT, or role-based security — were implemented or even attempted.</div>
-            </div>
-            <div class="reasoning-entry">
-              <div class="reasoning-entry-header">
-                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 1</span>
-                <span class="re-score warn">1</span>
-              </div>
-              <div class="re-text">score=1 (Failed). The agent did not demonstrate any understanding of the spec. It searched for a prompt.txt file, failed to find it, browsed the directory structure, and then asked the user for clarification instead of reading the task prompt that was provided in its system context. Zero acceptance criteria were addressed. The agent produced no implementation whatsoever.</div>
-            </div>
-            <div class="reasoning-entry">
-              <div class="reasoning-entry-header">
-                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 2</span>
-                <span class="re-score warn">1</span>
-              </div>
-              <div class="re-text">Score=1 (Failed: fundamentally wrong). Despite receiving the full hotel reservation lifecycle spec as its prompt input, the agent spent all 9 turns trying to locate a &#x27;prompt.txt&#x27; file in the workspace directory and then asked the user for clarification. It never engaged with the task requirements and produced no implementation whatsoever — a complete failure to understand or act on the specification.</div>
-            </div></div></div></div>
-    <div class="council-run-card">
-      <div class="council-run-header">
-        <div class="council-run-meta">
           <span class="run-badge">2026-05-14-210914</span>
           <code class="task-badge">pte-hello-world-note</code>
           <span class="council-badge">🏛️ Council</span>
@@ -2856,6 +2976,321 @@ This technical requirement document provides all details necessary for rapid dev
                 <span class="re-score warn">10</span>
               </div>
               <div class="re-text">score=10 (Perfect). Every acceptance criterion implemented: extension uses only extension objects (no base modifications), Customer table extended with &#x27;PTE Hello World Note&#x27; Text[100] field, field visible on Customer Card, non-blank values under 3 chars raise an error, blank is allowed, and code compiles cleanly with consistent naming. Perfect scope discipline — exactly two files, no extra objects, no scope creep. Blank handling and boundary values follow BC norms correctly.</div>
+            </div></div></div></div>
+    <div class="council-run-card">
+      <div class="council-run-header">
+        <div class="council-run-meta">
+          <span class="run-badge">2026-05-14-214414</span>
+          <code class="task-badge">02_hotel_management</code>
+          <span class="council-badge">🏛️ Council</span>
+        </div>
+        <div class="council-score-block">
+          <div class="council-final-score warn">8.0</div>
+          <div class="council-score-label">weighted avg<br>
+            <span style="color:var(--muted);font-size:11px">4/4 members · $2.6730</span>
+          </div>
+        </div>
+      </div>
+      <div class="inner-label">Per-axis council scores</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Axis</th>
+              <th style="text-align:center">Mean</th>
+              <th style="text-align:center">Std Dev</th>
+              <th style="text-align:center">Range</th>
+              <th style="text-align:center">Weight</th>
+              <th>Confidence</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="axis-title-sm">functional_correctness</div></td>
+              <td class="score-cell warn">7.8</td>
+              <td style="text-align:center;color:var(--muted)">±0.5</td>
+              <td style="text-align:center">
+                <div class="range-bar-wrap">
+                  <div class="range-track">
+                    <div class="range-fill" style="left:5px;width:4px"></div>
+                    <div class="range-mean" style="left:6px"></div>
+                  </div>
+                  <span class="range-label">7–8</span>
+                </div>
+              </td>
+              <td style="text-align:center;color:var(--muted)">0%</td>
+              <td><span class="conf-badge stable">✓ Stable</span></td>
+            </tr>
+            <tr>
+              <td><div class="axis-title-sm">code_quality</div></td>
+              <td class="score-cell warn">7.2</td>
+              <td style="text-align:center;color:var(--muted)">±0.5</td>
+              <td style="text-align:center">
+                <div class="range-bar-wrap">
+                  <div class="range-track">
+                    <div class="range-fill" style="left:5px;width:4px"></div>
+                    <div class="range-mean" style="left:5px"></div>
+                  </div>
+                  <span class="range-label">7–8</span>
+                </div>
+              </td>
+              <td style="text-align:center;color:var(--muted)">0%</td>
+              <td><span class="conf-badge stable">✓ Stable</span></td>
+            </tr>
+            <tr>
+              <td><div class="axis-title-sm">spec_understanding</div></td>
+              <td class="score-cell warn">9.0</td>
+              <td style="text-align:center;color:var(--muted)">±0.0</td>
+              <td style="text-align:center">
+                <div class="range-bar-wrap">
+                  <div class="range-track">
+                    <div class="range-fill" style="left:7px;width:4px"></div>
+                    <div class="range-mean" style="left:7px"></div>
+                  </div>
+                  <span class="range-label">9–9</span>
+                </div>
+              </td>
+              <td style="text-align:center;color:var(--muted)">0%</td>
+              <td><span class="conf-badge stable">✓ Stable</span></td>
+            </tr></tbody></table></div>
+      <div class="inner-label" style="margin-top:20px">Member run breakdown</div>
+      <div class="member-grid">
+        <div class="member-card ">
+          <div class="member-header" style="border-left:3px solid #0369a1">
+            <div>
+              <div class="member-label">Sonnet 4.6 · Run 1</div>
+              <div class="member-model" style="color:#0369a1">claude-sonnet-4-6</div>
+            </div>
+            <div class="member-score warn">✓ 8.0</div>
+          </div>
+          <div class="member-meta">
+            <span>💰 $0.4339</span>
+            <span>🔄 27 turns</span>
+          </div>
+          <div class="mini-axes">
+                <div class="mini-axis">
+                  <div class="mini-axis-label">functional_corre</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill warn" style="width:8%"></div>
+                  </div>
+                  <div class="mini-axis-score warn">8</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">code_quality</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill warn" style="width:7%"></div>
+                  </div>
+                  <div class="mini-axis-score warn">7</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">spec_understandi</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill warn" style="width:9%"></div>
+                  </div>
+                  <div class="mini-axis-score warn">9</div>
+                </div></div>
+        </div>
+        <div class="member-card ">
+          <div class="member-header" style="border-left:3px solid #0369a1">
+            <div>
+              <div class="member-label">Sonnet 4.6 · Run 2</div>
+              <div class="member-model" style="color:#0369a1">claude-sonnet-4-6</div>
+            </div>
+            <div class="member-score warn">✓ 8.3</div>
+          </div>
+          <div class="member-meta">
+            <span>💰 $0.8050</span>
+            <span>🔄 40 turns</span>
+          </div>
+          <div class="mini-axes">
+                <div class="mini-axis">
+                  <div class="mini-axis-label">functional_corre</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill warn" style="width:8%"></div>
+                  </div>
+                  <div class="mini-axis-score warn">8</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">code_quality</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill warn" style="width:8%"></div>
+                  </div>
+                  <div class="mini-axis-score warn">8</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">spec_understandi</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill warn" style="width:9%"></div>
+                  </div>
+                  <div class="mini-axis-score warn">9</div>
+                </div></div>
+        </div>
+        <div class="member-card ">
+          <div class="member-header" style="border-left:3px solid #7c3aed">
+            <div>
+              <div class="member-label">Opus 4.6 · Run 1</div>
+              <div class="member-model" style="color:#7c3aed">claude-opus-4-6</div>
+            </div>
+            <div class="member-score warn">✓ 7.6</div>
+          </div>
+          <div class="member-meta">
+            <span>💰 $0.6898</span>
+            <span>🔄 24 turns</span>
+          </div>
+          <div class="mini-axes">
+                <div class="mini-axis">
+                  <div class="mini-axis-label">functional_corre</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill warn" style="width:7%"></div>
+                  </div>
+                  <div class="mini-axis-score warn">7</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">code_quality</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill warn" style="width:7%"></div>
+                  </div>
+                  <div class="mini-axis-score warn">7</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">spec_understandi</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill warn" style="width:9%"></div>
+                  </div>
+                  <div class="mini-axis-score warn">9</div>
+                </div></div>
+        </div>
+        <div class="member-card ">
+          <div class="member-header" style="border-left:3px solid #7c3aed">
+            <div>
+              <div class="member-label">Opus 4.6 · Run 2</div>
+              <div class="member-model" style="color:#7c3aed">claude-opus-4-6</div>
+            </div>
+            <div class="member-score warn">✓ 8.0</div>
+          </div>
+          <div class="member-meta">
+            <span>💰 $0.7443</span>
+            <span>🔄 27 turns</span>
+          </div>
+          <div class="mini-axes">
+                <div class="mini-axis">
+                  <div class="mini-axis-label">functional_corre</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill warn" style="width:8%"></div>
+                  </div>
+                  <div class="mini-axis-score warn">8</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">code_quality</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill warn" style="width:7%"></div>
+                  </div>
+                  <div class="mini-axis-score warn">7</div>
+                </div>
+                <div class="mini-axis">
+                  <div class="mini-axis-label">spec_understandi</div>
+                  <div class="mini-bar-track">
+                    <div class="mini-bar-fill warn" style="width:9%"></div>
+                  </div>
+                  <div class="mini-axis-score warn">9</div>
+                </div></div>
+        </div></div>
+      <div class="inner-label" style="margin-top:20px">
+        <span onclick="toggleCouncilReasoning('council-reasoning-2026-05-14-214414')" style="cursor:pointer;user-select:none">
+          Per-axis reasoning from all members
+          <span class="chev" id="chev-council-reasoning-2026-05-14-214414">&#9654;</span>
+        </span>
+      </div>
+      <div id="council-reasoning-2026-05-14-214414" style="display:none">
+        <div class="reasoning-axis-block">
+          <div class="reasoning-axis-title">functional_correctness</div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 1</span>
+                <span class="re-score warn">8</span>
+              </div>
+              <div class="re-text">score=8 (Good: minor gaps only). Both pages (Hotel Room List, Hotel Reservation Card) render in BC with all spec fields confirmed via Playwright snapshot. All three action buttons (Check In, Checkout, Generate Invoice) are present in the Actions dropdown. The Service Charges subpart renders correctly. Code compiled with 0 errors. Full lifecycle not exercised at runtime due to absence of test data, so overbooking, deposit guard, and VAT calculation could not be executed end-to-end; capped at 8 per rubric.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 2</span>
+                <span class="re-score warn">8</span>
+              </div>
+              <div class="re-text">score=8 (Good: minor gaps only). Playwright confirmed all three pages render with correct columns/fields, the Service Charges subpart links correctly, and all three action buttons (Check In, Checkout, Generate Invoice) are present and reachable. Extension deployed with zero compile errors or warnings. Status enum shows all three values correctly. Could not interactively exercise the runtime validation paths (deposit-block, overbooking error, duplicate invoice guard) due to BC navigation complexity, so capping at 8 per rubric — verification was successful but not exhaustive across invalid-input scenarios.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 1</span>
+                <span class="re-score warn">7</span>
+              </div>
+              <div class="re-text">score=7 (Good: minor gaps only). Extension deployed successfully and both pages render correctly with all spec&#x27;d fields and actions. Hotel Room List shows all 4 columns; Reservation Card shows all 12 fields, the Service Charges subpage, and Check In/Checkout/Generate Invoice actions. Business logic code matches the spec exactly (overbooking prevention, deposit enforcement, checkout validation, VAT calculation, duplicate invoice guard, refund restriction). Runtime UI verified via Playwright but full business logic workflows (creating reservations, exercising error paths) were not end-to-end tested, capping the score.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 2</span>
+                <span class="re-score warn">8</span>
+              </div>
+              <div class="re-text">score=8 (Good: minor gaps only). Extension deployed with 0 compile errors/warnings. Playwright verification confirmed both pages render correctly: Hotel Room List (page 50100) shows all 4 columns (Room No., Room Type, Nightly Rate, Occupied), Hotel Reservation Card (page 50101) shows all 12 fields and the Service Charges subpart with correct columns. All 3 action buttons (Check In, Checkout, Generate Invoice) are verified present under the Actions menu. Codeunit logic is a faithful implementation of the spec&#x27;s business rules (overbooking prevention, deposit enforcement, checkout validation, VAT calculation, duplicate invoice guard, refund restriction). Full data-entry workflow was not exercised via Playwright, preventing a score above 8.</div>
+            </div></div>
+        <div class="reasoning-axis-block">
+          <div class="reasoning-axis-title">code_quality</div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 1</span>
+                <span class="re-score warn">7</span>
+              </div>
+              <div class="re-text">score=7 (Good: minor naming inconsistency or one missing property). Code is clean, well-structured AL: correct PTE prefix on all objects, IDs in 50000-99999 range, DataClassification = CustomerContent on all tables, ApplicationArea = All on all fields, proper Captions throughout. No BC 26 built-in penalties apply — GenerateInvoiceNo() uses a timestamp approach that was explicitly specified in the TRD. The sole quality gap is that no ToolTip properties appear on any field or action across the entire codebase, which is a standard BC convention requirement.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 2</span>
+                <span class="re-score warn">8</span>
+              </div>
+              <div class="re-text">score=8 (Good: minor gaps only). Idiomatic AL throughout: correct PTE prefix, all object IDs in 50000-99999, DataClassification=CustomerContent on every table, Caption on every object and field, ApplicationArea=All on all page elements, NoImplicitWith feature enabled. Correct AL patterns used (SetRange/SetFilter, FindLast, FindSet, IsEmpty, Insert/Modify with true). File organisation is clean and matches BC conventions. No BC 26 built-in reimplementation — no penalty applied. The sole gap is missing ToolTip properties on all page fields, which BC convention recommends.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 1</span>
+                <span class="re-score warn">7</span>
+              </div>
+              <div class="re-text">score=7 (Good: minor gaps only). All objects use PTE prefix and IDs in the 50100-50102 range (within 50000-99999). Correct object types throughout — tables, codeunits, pages, enum, permission sets. DataClassification = CustomerContent set at table level, Caption on all fields, ApplicationArea = All on all page fields, UsageCategory on list/card pages. Clean file organization under src/ with logical subdirectories. No duplication or anti-patterns. However, ToolTip is missing on every single page field — a required property per AppSourceCop and BC best practices. No BC 26 built-in penalties apply.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 2</span>
+                <span class="re-score warn">7</span>
+              </div>
+              <div class="re-text">score=7 (Good: minor missing property). All objects use PTE prefix and IDs in the 50100-50102 range within the valid PTE range. DataClassification = CustomerContent set on all 3 tables. Caption set on every field. ApplicationArea = All set on all page fields. Clean file organization by object type with no duplication. Correct use of enum, table, codeunit, page, and permissionset object types. However, ToolTip is missing on ALL page fields across all 3 pages — this is a standard BC/AppSourceCop requirement. No BC 26 built-in penalties apply; the timestamp-based invoice number generator is a custom format for a custom table, not a reimplementation of the No. Series module.</div>
+            </div></div>
+        <div class="reasoning-axis-block">
+          <div class="reasoning-axis-title">spec_understanding</div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 1</span>
+                <span class="re-score warn">9</span>
+              </div>
+              <div class="re-text">score=9 (Excellent: all explicit requirements met, one implicit requirement missed). Every object in the spec is faithfully reproduced: enum 50100, tables 50100-50102, codeunits 50100-50101, pages 50100-50102, permissionsets 50100-50101. All acceptance criteria are addressed: overbooking prevention with date-range overlap filter, deposit-before-check-in guard, service charge line accumulation, one-invoice-per-reservation guard, VAT calculation, final payment underpayment rejection, and refund restricted to Finance via CallerIsFinance parameter. No scope creep. The one missed implicit BC norm is ToolTips, which the spec itself did not specify.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#0369a1">Sonnet 4.6 · Run 2</span>
+                <span class="re-score warn">9</span>
+              </div>
+              <div class="re-text">score=9 (Excellent: all explicit requirements met, one implicit nit). Every one of the 11 requirement mappings is implemented: reservation lifecycle, overbooking prevention (correct date-overlap filter), room occupancy tracking, deposit capture with PaymentSuccess guard, service charge line accumulation, invoice generation, duplicate invoice guard, VAT calculation, final payment with deposit offset, refund restriction via CallerIsFinance, and both permission sets. All 20 test scenarios are addressable by the code. Scope discipline is perfect — no extra objects or fields beyond what the spec asked for. The only minor implicit gap is missing ToolTip metadata, which the spec&#x27;s own AL samples also omit.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 1</span>
+                <span class="re-score warn">9</span>
+              </div>
+              <div class="re-text">score=9 (Excellent: all explicit requirements met, one implicit requirement missed). Every acceptance criterion is implemented: overbooking prevention, deposit enforcement before check-in, service charges per reservation, single invoice generation, VAT calculation, final payment with deposit deduction, refund restricted to Finance role, PTE prefix, correct ID range. All 11 objects from the spec&#x27;s object table are present with exact matching IDs and names. Perfect scope discipline — no extra objects, fields, or features beyond the spec. The only gap is the implicit BC convention of ToolTip properties on page fields, which the spec itself did not mention.</div>
+            </div>
+            <div class="reasoning-entry">
+              <div class="reasoning-entry-header">
+                <span class="re-label" style="color:#7c3aed">Opus 4.6 · Run 2</span>
+                <span class="re-score warn">9</span>
+              </div>
+              <div class="re-text">score=9 (Excellent: all explicit requirements met, one minor implicit miss). All 11 objects from the spec are implemented with matching IDs, names, and logic. Every acceptance criterion is satisfied: overbooking prevention, deposit enforcement before check-in, service charge accumulation, single invoice generation, VAT calculation, final payment validation accounting for deposit, refund role restriction, and permission sets for Front Desk and Finance. Perfect scope discipline — exactly 11 files with no extra objects, fields, or features beyond the spec. The only gap is the implicit BC convention of ToolTips on page fields, which the spec&#x27;s own code samples also omitted.</div>
             </div></div></div></div>
 </section>
 
